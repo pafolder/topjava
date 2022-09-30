@@ -51,10 +51,9 @@ public class UserMealsUtil {
     public List<UserMealWithExcess> filteredByStreams(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         Map<LocalDate, Integer> caloriesByDate = new HashMap<>();
         return meals.stream()
-                .peek(userMeal -> {
-                    LocalDate date = userMeal.getDateTime().toLocalDate();
-                    caloriesByDate.put(date, caloriesByDate.getOrDefault(date, 0) + userMeal.getCalories());
-                })
+                .peek(userMeal -> caloriesByDate.put(userMeal.getDateTime().toLocalDate(),
+                        caloriesByDate.getOrDefault(userMeal.getDateTime().toLocalDate(), 0) + userMeal.getCalories())
+                )
                 .collect(Collectors.toList())
                 .stream()
                 .filter(userMeal -> TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime))
