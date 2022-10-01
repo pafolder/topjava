@@ -54,8 +54,7 @@ public class UserMealsUtil {
                 .peek(userMeal -> caloriesByDate.put(userMeal.getDateTime().toLocalDate(),
                         caloriesByDate.getOrDefault(userMeal.getDateTime().toLocalDate(), 0) + userMeal.getCalories())
                 )
-                .collect(Collectors.toList())
-                .stream()
+                .collect(new CustomCollector<>())
                 .filter(userMeal -> TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime))
                 .map(userMeal -> new UserMealWithExcess(userMeal.getDateTime(), userMeal.getDescription(), userMeal.getCalories(),
                         caloriesByDate.get(userMeal.getDateTime().toLocalDate()) > caloriesPerDay))
