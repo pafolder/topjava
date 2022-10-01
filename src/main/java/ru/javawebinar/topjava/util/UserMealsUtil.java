@@ -37,7 +37,7 @@ public class UserMealsUtil {
             LocalDate date = userMeal.getDateTime().toLocalDate();
             caloriesByDate.put(date, caloriesByDate.getOrDefault(date, 0) + userMeal.getCalories());
         });
-        List<UserMealWithExcess> listWithExcess = new LinkedList<>();
+        List<UserMealWithExcess> listWithExcess = new ArrayList<>();
         meals.forEach(userMeal -> {
             if (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime)) {
                 listWithExcess.add(new UserMealWithExcess(userMeal.getDateTime(), userMeal.getDescription(), userMeal.getCalories(),
