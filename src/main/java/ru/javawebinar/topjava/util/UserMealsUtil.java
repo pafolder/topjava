@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class UserMealsUtil {
     public static void main(String[] args) {
@@ -27,7 +26,7 @@ public class UserMealsUtil {
         List<UserMealWithExcess> mealsTo = user.filteredByCycles(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         mealsTo.forEach(System.out::println);
 
-        System.out.println("Filtered by Streams:");
+        System.out.println("Filtered by Streams with CustomCollector:");
         List<UserMealWithExcess> mealsToOptional = user.filteredByStreams(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         mealsToOptional.forEach(System.out::println);
     }
@@ -49,15 +48,12 @@ public class UserMealsUtil {
     }
 
     public List<UserMealWithExcess> filteredByStreams(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        Map<LocalDate, Integer> caloriesByDate = new HashMap<>();
+        CustomCollector customCollector = new CustomCollector(caloriesPerDay);
         return meals.stream()
-                .peek(userMeal -> caloriesByDate.put(userMeal.getDateTime().toLocalDate(),
-                        caloriesByDate.getOrDefault(userMeal.getDateTime().toLocalDate(), 0) + userMeal.getCalories())
-                )
-                .collect(new CustomCollector<>())
-                .filter(userMeal -> TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime))
-                .map(userMeal -> new UserMealWithExcess(userMeal.getDateTime(), userMeal.getDescription(), userMeal.getCalories(),
-                        caloriesByDate.get(userMeal.getDateTime().toLocalDate()) > caloriesPerDay))
-                .collect(Collectors.toList());
+                .filter(userMeal -> {
+                    customCollector.addCaloriesToDate(userMeal);
+                    return TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime);
+                })
+                .collect(customCollector);
     }
 }
