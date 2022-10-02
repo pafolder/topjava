@@ -52,7 +52,6 @@ public class UserMealsUtil {
         });
         List<UserMealWithExcess> listWithExcess = new ArrayList<>();
         fMealsMap.values().forEach(fMeals -> listWithExcess.addAll(fMeals.filteredMealsPerDay));
-
         return listWithExcess;
     }
 
