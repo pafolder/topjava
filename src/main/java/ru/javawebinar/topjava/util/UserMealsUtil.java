@@ -64,7 +64,9 @@ public class UserMealsUtil {
                         }
                 )).values().stream()
                 .map(fMealsPerDay -> fMealsPerDay.filteredMealsPerDay)
-                .collect(Collectors.toList()).stream().flatMap(List::stream).collect(Collectors.toList());
+                .collect(Collectors.toList()).stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
     static class FilteredMealsPerDayWithTotalCarlories {
