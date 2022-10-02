@@ -8,11 +8,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class UserMealsUtil {
     public static void main(String[] args) {
@@ -30,7 +26,7 @@ public class UserMealsUtil {
         List<UserMealWithExcess> mealsTo = filteredByCycles(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         mealsTo.forEach(System.out::println);
 
-        System.out.println("Filtered by Streams with MealsCollector:");
+        System.out.println("\nFiltered by Streams Optional 2:");
         List<UserMealWithExcess> mealsToOptional = filteredByStreams(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         mealsToOptional.forEach(System.out::println);
     }
@@ -52,73 +48,53 @@ public class UserMealsUtil {
     }
 
     public static List<UserMealWithExcess> filteredByStreams(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        MealsCollector mealsCollector = new MealsCollector(startTime, endTime, caloriesPerDay);
         return meals.stream()
-                .map(mealsCollector::addMeal)
-                .collect(mealsCollector);
+                .collect(Collectors.toMap(UserMeal::getDate,
+                        userMeal -> {
+                            FilteredMealsPerDayWithTotalCarlories fMeals = new FilteredMealsPerDayWithTotalCarlories(caloriesPerDay);
+                            return (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime)) ?
+                                    fMeals.addMeal(userMeal) : fMeals.addOnlyCalories(userMeal);
+                        },
+                        (existing, newMeal) -> {
+                            existing.totalCaloriesPerDay += newMeal.totalCaloriesPerDay;
+                            if (newMeal.filteredMealsPerDay.size() != 0)
+                                existing.filteredMealsPerDay.add(newMeal.filteredMealsPerDay.get(0));
+                            existing.processExcess();
+                            return existing;
+                        }
+                )).values().stream()
+                .map(fMealsPerDay -> fMealsPerDay.filteredMealsPerDay)
+                .collect(Collectors.toList()).stream().flatMap(List::stream).collect(Collectors.toList());
     }
 
-    static class MealsCollector implements Collector<UserMeal, List<UserMeal>, List<UserMealWithExcess>> {
-        static class FilteredMealsPerDayWithTotalCarlories {
-            public List<UserMeal> filteredMealsPerDay = new ArrayList<>();
-            public int totalCaloriesPerDay = 0;
+    static class FilteredMealsPerDayWithTotalCarlories {
+        public List<UserMealWithExcess> filteredMealsPerDay = new ArrayList<>();
+        public int totalCaloriesPerDay = 0;
+        private final int limitCaloriesPerDay;
+        private boolean dayExcess = false;
+
+        public FilteredMealsPerDayWithTotalCarlories(int limitCaloriesPerDay) {
+            this.limitCaloriesPerDay = limitCaloriesPerDay;
         }
 
-        private final Map<LocalDate, FilteredMealsPerDayWithTotalCarlories> fMealsPerDate = new HashMap<>();
-        private final int caloriesPerDay;
-        private final LocalTime startTime;
-        private final LocalTime endTime;
-
-        public MealsCollector(LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-            this.startTime = startTime;
-            this.endTime = endTime;
-            this.caloriesPerDay = caloriesPerDay;
+        private FilteredMealsPerDayWithTotalCarlories addMeal(UserMeal userMeal) {
+            filteredMealsPerDay.add(new UserMealWithExcess(userMeal.getDateTime(), userMeal.getDescription(), userMeal.getCalories(), dayExcess));
+            addOnlyCalories(userMeal);
+            processExcess();
+            return this;
         }
 
-        public UserMeal addMeal(UserMeal userMeal) {
-            FilteredMealsPerDayWithTotalCarlories fMealsPerDay = fMealsPerDate.getOrDefault(userMeal.getDateTime().toLocalDate(),
-                    new FilteredMealsPerDayWithTotalCarlories());
-            fMealsPerDay.totalCaloriesPerDay += userMeal.getCalories();
-            if (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime)) {
-                fMealsPerDay.filteredMealsPerDay.add(userMeal);
+        private FilteredMealsPerDayWithTotalCarlories addOnlyCalories(UserMeal userMeal) {
+            totalCaloriesPerDay += userMeal.getCalories();
+            processExcess();
+            return this;
+        }
+
+        public void processExcess() {
+            if (!dayExcess && totalCaloriesPerDay > limitCaloriesPerDay) {
+                dayExcess = true;
+                filteredMealsPerDay.forEach(meal -> meal.setExcess(true));
             }
-            fMealsPerDate.put(userMeal.getDateTime().toLocalDate(), fMealsPerDay);
-            return userMeal;
-        }
-
-        @Override
-        public Supplier<List<UserMeal>> supplier() {
-            return ArrayList::new;
-        }
-
-        @Override
-        public BiConsumer<List<UserMeal>, UserMeal> accumulator() {
-            return List::add;
-        }
-
-        @Override
-        public BinaryOperator<List<UserMeal>> combiner() {
-            return (left, right) -> {
-                left.addAll(right);
-                return left;
-            };
-        }
-
-        @Override
-        public Function<List<UserMeal>, List<UserMealWithExcess>> finisher() {
-            List<UserMealWithExcess> resultList = new ArrayList<>();
-            return (mealList) -> {
-                fMealsPerDate.forEach((date, fMealsPerDay) ->
-                        fMealsPerDay.filteredMealsPerDay.forEach(userMeal -> resultList.add(new UserMealWithExcess(userMeal.getDateTime(), userMeal.getDescription(), userMeal.getCalories(),
-                                fMealsPerDay.totalCaloriesPerDay > caloriesPerDay)))
-                );
-                return resultList;
-            };
-        }
-
-        @Override
-        public Set<Characteristics> characteristics() {
-            return Collections.singleton(Characteristics.UNORDERED);
         }
     }
 }
