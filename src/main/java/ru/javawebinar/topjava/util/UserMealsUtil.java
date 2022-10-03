@@ -62,7 +62,7 @@ public class UserMealsUtil {
                             return existingMeal;
                         }
                 )).values().stream()
-                .map(fMealsPerDay -> fMealsPerDay.filteredDayMeals)
+                .map(fDayMeals -> fDayMeals.filteredDayMeals)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
