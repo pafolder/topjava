@@ -11,8 +11,9 @@ public class UserMealWithExcess {
 
     private boolean excess;
 
-    public void setExcess(boolean excess) {
+    public UserMealWithExcess setExcess(boolean excess) {
         this.excess = excess;
+        return this;
     }
 
     public UserMealWithExcess(LocalDateTime dateTime, String description, int calories, boolean excess) {
