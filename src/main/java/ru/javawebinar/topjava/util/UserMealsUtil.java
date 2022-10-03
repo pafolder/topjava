@@ -22,18 +22,18 @@ public class UserMealsUtil {
         mealsFilteredByRecursion.forEach(System.out::println);
     }
 
-    static Map<LocalDate, Integer> caloriesByDate = new HashMap<>();
-    static List<UserMealWithExcess> resultList = new ArrayList<>();
-
     static List<UserMealWithExcess> filteredByRecursion(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int dayCaloriesLimit) {
-        return filteredByRecursion(meals.size(), meals, startTime, endTime, dayCaloriesLimit);
+        Map<LocalDate, Integer> caloriesByDate = new HashMap<>();
+        List<UserMealWithExcess> resultList = new ArrayList<>();
+        return recursiveFilter(meals, startTime, endTime, dayCaloriesLimit, caloriesByDate, resultList, meals.size());
     }
 
-        static List<UserMealWithExcess> filteredByRecursion(int i, List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int dayCaloriesLimit) {
+    static List<UserMealWithExcess> recursiveFilter(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int dayCaloriesLimit,
+                                                        Map<LocalDate, Integer> caloriesByDate, List<UserMealWithExcess> resultList, int i) {
         if (i != 0) {
             UserMeal userMeal = meals.get(--i);
             caloriesByDate.put(userMeal.getDate(), caloriesByDate.getOrDefault(userMeal.getDate(), 0) + userMeal.getCalories());
-            filteredByRecursion(i, meals, startTime, endTime, dayCaloriesLimit);
+            recursiveFilter(meals, startTime, endTime, dayCaloriesLimit, caloriesByDate, resultList, i);
             if (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime)) {
                 resultList.add(new UserMealWithExcess(userMeal.getDateTime(), userMeal.getDescription(), userMeal.getCalories(),
                         caloriesByDate.get(userMeal.getDate()) > dayCaloriesLimit));
