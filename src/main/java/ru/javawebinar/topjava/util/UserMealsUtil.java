@@ -31,12 +31,12 @@ public class UserMealsUtil {
         mealsToOptional.forEach(System.out::println);
     }
 
-    public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+    public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int dayCaloriesLimit) {
         Map<LocalDate, FilteredDayMealsWithDayCalories> fMealsMap = new HashMap<>();
         List<UserMealWithExcess> resultList = new ArrayList<>();
         meals.forEach(userMeal -> {
             FilteredDayMealsWithDayCalories fDayMeals = fMealsMap.getOrDefault(userMeal.getDate(),
-                    new FilteredDayMealsWithDayCalories(resultList, caloriesPerDay));
+                    new FilteredDayMealsWithDayCalories(resultList, dayCaloriesLimit));
             if (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime))
                 fDayMeals.addMeal(userMeal);
             else
