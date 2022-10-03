@@ -68,10 +68,10 @@ public class UserMealsUtil {
     }
 
     static class FilteredDayMealsWithDayCalories {
-        public List<UserMealWithExcess> filteredDayMeals = new ArrayList<>();
-        public List<Integer> dayIndexesInResultList;
-        public List<UserMealWithExcess> resultListRef;
-        public int dayCalories;
+        private List<UserMealWithExcess> filteredDayMeals = new ArrayList<>();
+        private List<Integer> dayIndexesInResultList;
+        private final List<UserMealWithExcess> resultListRef;
+        private int dayCalories;
         private final int dayCaloriesLimit;
         private boolean dayExcess;
 
