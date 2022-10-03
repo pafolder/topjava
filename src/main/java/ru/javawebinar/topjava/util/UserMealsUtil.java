@@ -37,10 +37,12 @@ public class UserMealsUtil {
         meals.forEach(userMeal -> {
             FilteredDayMealsWithDayCalories fDayMeals = fMealsMap.getOrDefault(userMeal.getDate(),
                     new FilteredDayMealsWithDayCalories(resultList, dayCaloriesLimit));
-            if (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime))
+            if (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime)) {
                 fDayMeals.addMeal(userMeal);
-            else
+            }
+            else {
                 fDayMeals.addDayCalories(userMeal);
+            }
             fMealsMap.put(userMeal.getDate(), fDayMeals);
         });
         return resultList;
@@ -54,12 +56,12 @@ public class UserMealsUtil {
                             return (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime)) ?
                                     fMeals.addMeal(userMeal) : fMeals.addDayCalories(userMeal);
                         },
-                        (existingMeal, nextMeal) -> {
-                            existingMeal.dayCalories += nextMeal.dayCalories;
-                            if (nextMeal.filteredDayMeals.size() != 0)
-                                existingMeal.filteredDayMeals.add(nextMeal.filteredDayMeals.get(0));
-                            existingMeal.processDayExcess();
-                            return existingMeal;
+                        (existingDayMeals, nextDayMeals) -> {
+                            existingDayMeals.dayCalories += nextDayMeals.dayCalories;
+                            if (nextDayMeals.filteredDayMeals.size() != 0)
+                                existingDayMeals.filteredDayMeals.add(nextDayMeals.filteredDayMeals.get(0));
+                            existingDayMeals.processDayExcess();
+                            return existingDayMeals;
                         }
                 )).values().stream()
                 .map(fDayMeals -> fDayMeals.filteredDayMeals)
@@ -101,12 +103,24 @@ public class UserMealsUtil {
         }
 
         private void processDayExcess() {
+            if (resultListRef == null) {
+                processDayExcessForFilterByStreams();
+            } else {
+                processDayExcessForFilterByCycles();
+            }
+        }
+        private void processDayExcessForFilterByStreams() {
             if (!dayExcess && dayCalories > dayCaloriesLimit) {
                 dayExcess = true;
                 filteredDayMeals = filteredDayMeals.stream()
                         .map(meal -> meal.setExcess(true))
                         .collect(Collectors.toList());
-                if (resultListRef != null)
+            }
+        }
+
+        private void processDayExcessForFilterByCycles() {
+            if (!dayExcess && dayCalories > dayCaloriesLimit) {
+                dayExcess = true;
                     for (Integer index : dayIndexesInResultList)
                         resultListRef.get(index).setExcess(true);
             }
