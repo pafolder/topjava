@@ -69,7 +69,7 @@ public class UserMealsUtil {
     }
 
     static class FilteredDayMealsWithDayCaloriesForFilterByCycles {
-        private final List<Integer> dayIndexesInResultList = new ArrayList<>();
+        private final List<Integer> dayIndexesInResultList = new LinkedList<>();
         private final List<UserMealWithExcess> resultListRef;
         private int dayCalories;
         private final int dayCaloriesLimit;
@@ -96,8 +96,14 @@ public class UserMealsUtil {
         private void processDayExcess() {
             if (!dayExcess && dayCalories > dayCaloriesLimit) {
                 dayExcess = true;
-                for (Integer index : dayIndexesInResultList)
-                    resultListRef.get(index).setExcess(true);
+                setExcesses(dayIndexesInResultList.size());
+            }
+        }
+
+        void setExcesses(int i) {
+            if (i != 0) {
+                resultListRef.get(dayIndexesInResultList.get(--i)).setExcess(true);
+                setExcesses(i);
             }
         }
     }
@@ -135,5 +141,4 @@ public class UserMealsUtil {
             }
         }
     }
-
 }
