@@ -35,13 +35,13 @@ public class UserMealsUtil {
         mealsFilteredByRecursion.forEach(System.out::println);
     }
 
-    static List<UserMealWithExcess> filteredByRecursion(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int dayCaloriesLimit) {
+    public static List<UserMealWithExcess> filteredByRecursion(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int dayCaloriesLimit) {
         Map<LocalDate, Integer> caloriesByDate = new HashMap<>();
         List<UserMealWithExcess> resultList = new ArrayList<>();
         return recursiveFilter(meals, startTime, endTime, dayCaloriesLimit, caloriesByDate, resultList, meals.size());
     }
 
-    static List<UserMealWithExcess> recursiveFilter(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int dayCaloriesLimit,
+    static List<UserMealWithExcess> recursiveFilter(List<UserMeal>meals, LocalTime startTime, LocalTime endTime, int dayCaloriesLimit,
                                                     Map<LocalDate, Integer> caloriesByDate, List<UserMealWithExcess> resultList, int i) {
         if (i != 0) {
             UserMeal userMeal = meals.get(--i);
