@@ -32,15 +32,14 @@ public class UserMealsUtil {
     }
 
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int dayCaloriesLimit) {
-        Map<LocalDate, FilteredDayMealsWithDayCalories> fMealsMap = new HashMap<>();
+        Map<LocalDate, FilteredDayMealsWithDayCaloriesForFilterByCycles> fMealsMap = new HashMap<>();
         List<UserMealWithExcess> resultList = new ArrayList<>();
         meals.forEach(userMeal -> {
-            FilteredDayMealsWithDayCalories fDayMeals = fMealsMap.getOrDefault(userMeal.getDate(),
-                    new FilteredDayMealsWithDayCalories(resultList, dayCaloriesLimit));
+            FilteredDayMealsWithDayCaloriesForFilterByCycles fDayMeals = fMealsMap.getOrDefault(userMeal.getDate(),
+                    new FilteredDayMealsWithDayCaloriesForFilterByCycles(resultList, dayCaloriesLimit));
             if (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime)) {
                 fDayMeals.addMeal(userMeal);
-            }
-            else {
+            } else {
                 fDayMeals.addDayCalories(userMeal);
             }
             fMealsMap.put(userMeal.getDate(), fDayMeals);
@@ -52,7 +51,7 @@ public class UserMealsUtil {
         return meals.stream()
                 .collect(Collectors.toMap(UserMeal::getDate,
                         userMeal -> {
-                            FilteredDayMealsWithDayCalories fMeals = new FilteredDayMealsWithDayCalories(null, dayCaloriesLimit);
+                            FilteredDayMealsWithDayCaloriesForFilterByStreams fMeals = new FilteredDayMealsWithDayCaloriesForFilterByStreams(dayCaloriesLimit);
                             return (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime)) ?
                                     fMeals.addMeal(userMeal) : fMeals.addDayCalories(userMeal);
                         },
@@ -69,47 +68,65 @@ public class UserMealsUtil {
                 .collect(Collectors.toList());
     }
 
-    static class FilteredDayMealsWithDayCalories {
-        private List<UserMealWithExcess> filteredDayMeals = new ArrayList<>();
-        private List<Integer> dayIndexesInResultList;
+    static class FilteredDayMealsWithDayCaloriesForFilterByCycles {
+        private final List<Integer> dayIndexesInResultList = new ArrayList<>();
         private final List<UserMealWithExcess> resultListRef;
         private int dayCalories;
         private final int dayCaloriesLimit;
         private boolean dayExcess;
 
-        public FilteredDayMealsWithDayCalories(List<UserMealWithExcess> resultList, int dayCaloriesLimit) {
-            this.resultListRef = resultList;
-            if (resultList != null)
-                dayIndexesInResultList = new ArrayList<>();
+        public FilteredDayMealsWithDayCaloriesForFilterByCycles(List<UserMealWithExcess> resultListRef, int dayCaloriesLimit) {
+            this.resultListRef = resultListRef;
             this.dayCaloriesLimit = dayCaloriesLimit;
         }
 
-        private FilteredDayMealsWithDayCalories addMeal(UserMeal userMeal) {
+        private void addMeal(UserMeal userMeal) {
+            UserMealWithExcess userMealWithExcess = new UserMealWithExcess(userMeal.getDateTime(), userMeal.getDescription(), userMeal.getCalories(), dayExcess);
+            dayIndexesInResultList.add(resultListRef.size());
+            resultListRef.add(userMealWithExcess);
+            addDayCalories(userMeal);
+            processDayExcess();
+        }
+
+        public void addDayCalories(UserMeal userMeal) {
+            dayCalories += userMeal.getCalories();
+            processDayExcess();
+        }
+
+        private void processDayExcess() {
+            if (!dayExcess && dayCalories > dayCaloriesLimit) {
+                dayExcess = true;
+                for (Integer index : dayIndexesInResultList)
+                    resultListRef.get(index).setExcess(true);
+            }
+        }
+    }
+
+    static class FilteredDayMealsWithDayCaloriesForFilterByStreams {
+        private List<UserMealWithExcess> filteredDayMeals = new ArrayList<>();
+        private int dayCalories;
+        private final int dayCaloriesLimit;
+        private boolean dayExcess;
+
+        public FilteredDayMealsWithDayCaloriesForFilterByStreams(int dayCaloriesLimit) {
+            this.dayCaloriesLimit = dayCaloriesLimit;
+        }
+
+        private FilteredDayMealsWithDayCaloriesForFilterByStreams addMeal(UserMeal userMeal) {
             UserMealWithExcess userMealWithExcess = new UserMealWithExcess(userMeal.getDateTime(), userMeal.getDescription(), userMeal.getCalories(), dayExcess);
             filteredDayMeals.add(userMealWithExcess);
-            if (resultListRef != null) {
-                dayIndexesInResultList.add(resultListRef.size());
-                resultListRef.add(userMealWithExcess);
-            }
             addDayCalories(userMeal);
             processDayExcess();
             return this;
         }
 
-        private FilteredDayMealsWithDayCalories addDayCalories(UserMeal userMeal) {
+        public FilteredDayMealsWithDayCaloriesForFilterByStreams addDayCalories(UserMeal userMeal) {
             dayCalories += userMeal.getCalories();
             processDayExcess();
             return this;
         }
 
         private void processDayExcess() {
-            if (resultListRef == null) {
-                processDayExcessForFilterByStreams();
-            } else {
-                processDayExcessForFilterByCycles();
-            }
-        }
-        private void processDayExcessForFilterByStreams() {
             if (!dayExcess && dayCalories > dayCaloriesLimit) {
                 dayExcess = true;
                 filteredDayMeals = filteredDayMeals.stream()
@@ -117,13 +134,6 @@ public class UserMealsUtil {
                         .collect(Collectors.toList());
             }
         }
-
-        private void processDayExcessForFilterByCycles() {
-            if (!dayExcess && dayCalories > dayCaloriesLimit) {
-                dayExcess = true;
-                    for (Integer index : dayIndexesInResultList)
-                        resultListRef.get(index).setExcess(true);
-            }
-        }
     }
+
 }
