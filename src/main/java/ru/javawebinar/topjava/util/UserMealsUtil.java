@@ -100,7 +100,7 @@ public class UserMealsUtil {
             return this;
         }
 
-        public void processDayExcess() {
+        private void processDayExcess() {
             if (!dayExcess && dayCalories > dayCaloriesLimit) {
                 dayExcess = true;
                 filteredDayMeals = filteredDayMeals.stream()
