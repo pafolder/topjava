@@ -4,7 +4,6 @@ import ru.javawebinar.topjava.model.UserMealWithExcess;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,13 +19,6 @@ public class FilterTests {
     public void PerformanceTest() {
         int i;
         List<UserMeal> meals = new ArrayList<>();
-        meals.add(new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500));
-        meals.add(new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000));
-        meals.add(new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 30, 20, 0), "Ужин", 500));
-        meals.add(new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 31, 0, 0), "Еда на граничное значение", 100));
-        meals.add(new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 31, 10, 0), "Завтрак", 1000));
-        meals.add(new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 31, 13, 0), "Обед", 500));
-        meals.add(new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 410));
         for (i = 0; i < MEALS_NUMBER; i++) {
             meals.add(new UserMeal(LocalDateTime.of(2000 + (int) (Math.random() * 22),
                     1 + (int) (Math.random() * 11),
