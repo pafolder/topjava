@@ -109,7 +109,7 @@ public class UserMealsUtil {
     }
 
     static class FilteredDayMealsWithDayCaloriesForFilterByStreams {
-        private List<UserMealWithExcess> filteredDayMeals = new ArrayList<>();
+        private final List<UserMealWithExcess> filteredDayMeals = new ArrayList<>();
         private int dayCalories;
         private final int dayCaloriesLimit;
         private boolean dayExcess;
@@ -135,10 +135,15 @@ public class UserMealsUtil {
         private void processDayExcess() {
             if (!dayExcess && dayCalories > dayCaloriesLimit) {
                 dayExcess = true;
-                filteredDayMeals = filteredDayMeals.stream()
-                        .map(meal -> meal.setExcess(true))
-                        .collect(Collectors.toList());
+                setExcesses(filteredDayMeals.size());
             }
         }
+            void setExcesses(int i) {
+                if (i != 0) {
+                    filteredDayMeals.get(--i).setExcess(true);
+                    setExcesses(i);
+                }
+            }
+
     }
 }
