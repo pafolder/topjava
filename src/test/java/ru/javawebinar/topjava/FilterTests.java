@@ -1,3 +1,5 @@
+package ru.javawebinar.topjava;
+
 import org.junit.Test;
 import ru.javawebinar.topjava.model.UserMeal;
 import ru.javawebinar.topjava.model.UserMealWithExcess;
@@ -11,12 +13,12 @@ import static org.junit.Assert.assertEquals;
 import static ru.javawebinar.topjava.util.UserMealsUtil.*;
 
 public class FilterTests {
-    private final int MEALS_NUMBER = 1000;
-    private final int NUMBER_OF_SEARCHES = 10000;
+    private final int MEALS_NUMBER = 100;
+    private final int NUMBER_OF_ITERATIONS = 100000;
 
 
     @Test
-    public void PerformanceTest() {
+    public void performanceTest() {
         int i;
         List<UserMeal> meals = new ArrayList<>();
         for (i = 0; i < MEALS_NUMBER; i++) {
@@ -34,28 +36,28 @@ public class FilterTests {
         long start;
         long end;
         System.out.print("\nFiltered by Cycles:");
-        start = System.currentTimeMillis();
-        for (i = 0; i < NUMBER_OF_SEARCHES; i++) {
+        start = System.nanoTime();
+        for (i = 0; i < NUMBER_OF_ITERATIONS; i++) {
             mealsFilteredByCycles = filteredByCycles(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         }
-        end = System.currentTimeMillis();
-        System.out.format(" %d ms", end - start);
+        end = System.nanoTime();
+        System.out.format(" %d ms", (end - start)/1000000);
 
         System.out.print("\nFiltered by Streams:");
-        start = System.currentTimeMillis();
-        for (i = 0; i < NUMBER_OF_SEARCHES; i++) {
+        start = System.nanoTime();
+        for (i = 0; i < NUMBER_OF_ITERATIONS; i++) {
             mealsFilteredByStreams = filteredByStreams(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         }
-        end = System.currentTimeMillis();
-        System.out.format(" %d ms", end - start);
+        end = System.nanoTime();
+        System.out.format(" %d ms", (end - start)/1000000);
 
         System.out.print("\nFiltered by Recursion:");
-        start = System.currentTimeMillis();
-        for (i = 0; i < NUMBER_OF_SEARCHES; i++) {
+        start = System.nanoTime();
+        for (i = 0; i < NUMBER_OF_ITERATIONS; i++) {
             mealsFilteredByRecursion = filteredByRecursion(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         }
-        end = System.currentTimeMillis();
-        System.out.format(" %d ms\n", end - start);
+        end = System.nanoTime();
+        System.out.format(" %d ms\n", (end - start)/1000000);
         assertEquals(mealsFilteredByStreams.size(), mealsFilteredByCycles.size());
         assertEquals(mealsFilteredByStreams.size(), mealsFilteredByRecursion.size());
     }
