@@ -22,23 +22,33 @@ public class UserMealsUtil {
         mealsFilteredByRecursion.forEach(System.out::println);
     }
 
-    public static List<UserMealWithExcess> filteredByRecursion(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int dayCaloriesLimit) {
-        Map<LocalDate, Integer> caloriesByDate = new HashMap<>();
-        List<UserMealWithExcess> resultList = new ArrayList<>();
-        return recursiveFilter(meals, startTime, endTime, dayCaloriesLimit, caloriesByDate, resultList, meals.size());
-    }
+    public static List<UserMealWithExcess> filteredByRecursion(List<UserMeal> _meals, LocalTime _startTime, LocalTime _endTime, int _dayCaloriesLimit) {
+        return new Runnable() {
+            final List<UserMeal> meals = _meals;
+            final LocalTime startTime = _startTime;
+            final LocalTime endTime = _endTime;
+            final int dayCaloriesLimit = _dayCaloriesLimit;
+            final Map<LocalDate, Integer> caloriesByDate = new HashMap<>();
+            final List<UserMealWithExcess> resultList = new ArrayList<>();
+            int i = meals.size();
 
-    private static List<UserMealWithExcess> recursiveFilter(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int dayCaloriesLimit,
-                                                        Map<LocalDate, Integer> caloriesByDate, List<UserMealWithExcess> resultList, int i) {
-        if (i != 0) {
-            UserMeal userMeal = meals.get(--i);
-            caloriesByDate.put(userMeal.getDate(), caloriesByDate.getOrDefault(userMeal.getDate(), 0) + userMeal.getCalories());
-            recursiveFilter(meals, startTime, endTime, dayCaloriesLimit, caloriesByDate, resultList, i);
-            if (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime)) {
-                resultList.add(new UserMealWithExcess(userMeal.getDateTime(), userMeal.getDescription(), userMeal.getCalories(),
-                        caloriesByDate.get(userMeal.getDate()) > dayCaloriesLimit));
+            @Override
+            public void run() {
+                if (i != 0) {
+                    UserMeal userMeal = meals.get(--i);
+                    caloriesByDate.put(userMeal.getDate(), caloriesByDate.getOrDefault(userMeal.getDate(), 0) + userMeal.getCalories());
+                    run();
+                    if (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime)) {
+                        resultList.add(new UserMealWithExcess(userMeal.getDateTime(), userMeal.getDescription(), userMeal.getCalories(),
+                                caloriesByDate.get(userMeal.getDate()) > dayCaloriesLimit));
+                    }
+                }
             }
-        }
-        return resultList;
+
+            List<UserMealWithExcess> doFiltering() {
+                run();
+                return resultList;
+            }
+        }.doFiltering();
     }
 }
