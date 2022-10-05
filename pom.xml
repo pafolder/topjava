@@ -15,7 +15,8 @@
         <java.version>1.9</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jvm.options>-Xss4096k</jvm.options>
+        <jvm.options>-Xss900m</jvm.options>
+        <jvm.options> -Xmx900m</jvm.options>
     </properties>
 
     <build>
