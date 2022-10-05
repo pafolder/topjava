@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jvm.options>-Xss900m</jvm.options>
-        <jvm.options> -Xmx900m</jvm.options>
+        <jvm.options>-Xmx900m</jvm.options>
     </properties>
 
     <build>
