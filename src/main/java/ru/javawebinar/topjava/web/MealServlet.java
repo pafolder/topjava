@@ -1,8 +1,8 @@
 package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
+import ru.javawebinar.topjava.dao.MealsMemoryDao;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.model.MealTo;
 import ru.javawebinar.topjava.util.MealsUtil;
 
 import javax.servlet.ServletException;
@@ -12,37 +12,57 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Month;
-import java.util.Arrays;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class MealServlet extends HttpServlet {
-    static final int CALORIES_PER_DAY = 2000;
-
     private static final Logger log = getLogger(MealServlet.class);
+    private final MealsMemoryDao meals = new MealsMemoryDao();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        log.debug("redirect to meals");
+        String action = request.getParameter("action");
+        if (action != null && action.equalsIgnoreCase("delete")) {
+            int mealId = Integer.parseInt(request.getParameter("mealId"));
+            meals.delete(mealId);
+        }
+        if (action != null && action.equalsIgnoreCase("edit")) {
+            int mealId = Integer.parseInt(request.getParameter("mealId"));
+            request.setAttribute("meal", meals.get(mealId));
+            request.getRequestDispatcher("edit.jsp").forward(request, response);
+        }
 
+        if (action != null && action.equalsIgnoreCase("new")) {
+            LocalDateTime now = LocalDateTime.now();
+            Meal meal = new Meal(now.minusNanos(now.getNano()).minusSeconds(now.getSecond()), "", 0, 0);
+            int mealId = meals.add(meal);
+            request.setAttribute("meal", meals.get(mealId));
+            request.getRequestDispatcher("edit.jsp").forward(request, response);
+        }
+        processForwardRequest(request, response);
+    }
 
-        List<MealTo> mealsTo = MealsUtil.filteredByStreams(
-                Arrays.asList(
-                        new Meal(LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500),
-                        new Meal(LocalDateTime.of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000),
-                        new Meal(LocalDateTime.of(2020, Month.JANUARY, 30, 20, 0), "Ужин", 500),
-                        new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 0, 0), "Еда на граничное значение", 100),
-                        new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 10, 0), "Завтрак", 1000),
-                        new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 13, 0), "Обед", 500),
-                        new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 410)
-                ), LocalTime.of(0, 0), LocalTime.of(23, 59), CALORIES_PER_DAY);
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        String str = request.getParameter("dateTime").replaceFirst("T", " ");
 
-        request.setAttribute("mealsTo", mealsTo);
-        request.getRequestDispatcher("/meals.jsp").forward(request, response);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime dateTime = LocalDateTime.parse(str, formatter);
+        int mealId = Integer.parseInt(request.getParameter("mealId"));
+        Meal meal = new Meal(dateTime,
+                request.getParameter("description"),
+                Integer.parseInt(request.getParameter("calories")),
+                mealId);
+        meals.update(meal);
+        processForwardRequest(request, response);
+    }
 
-//        request.getRequestDispatcher("/users.jsp").forward(request, response);
-//        response.sendRedirect("meals.jsp");
+    private void processForwardRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setAttribute("mealsTo",
+                MealsUtil.filteredByStreams(meals.getAll(), LocalTime.of(0, 0), LocalTime.of(23, 59), 2000).stream()
+                        .sorted((m1, m2) -> m1.getDateTime().isBefore(m2.getDateTime()) ? -1 : 0).collect(Collectors.toList()));
+        request.getRequestDispatcher("meals.jsp").forward(request, response);
     }
 }
