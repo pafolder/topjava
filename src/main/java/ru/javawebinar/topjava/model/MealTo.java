@@ -11,15 +11,15 @@ public class MealTo {
 
     private final int calories;
 
-    private final Integer id;
+    private final int id;
 
     private final boolean excess;
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public MealTo(LocalDateTime dateTime, String description, int calories, boolean excess, Integer id) {
+    public MealTo( int id, LocalDateTime dateTime, String description, int calories, boolean excess) {
         this.dateTime = dateTime;
         this.description = description;
         this.calories = calories;

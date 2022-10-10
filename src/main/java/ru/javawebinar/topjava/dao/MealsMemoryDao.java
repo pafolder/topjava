@@ -4,55 +4,60 @@ import ru.javawebinar.topjava.model.Meal;
 
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MealsMemoryDao implements MealsDao {
-    static AtomicInteger mealCount = new AtomicInteger();
+    static final AtomicInteger mealCount = new AtomicInteger();
 
+    private final ConcurrentMap<Integer, Meal> meals = new ConcurrentHashMap<>();
 
-    private final CopyOnWriteArrayList<Meal> meals = new CopyOnWriteArrayList<>();
-
-    public MealsMemoryDao() {
-        meals.addAll(Arrays.asList(
-                new Meal(LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500, mealCount.addAndGet(1)),
-                new Meal(LocalDateTime.of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000, mealCount.addAndGet(1)),
-                new Meal(LocalDateTime.of(2020, Month.JANUARY, 30, 20, 0), "Ужин", 500, mealCount.addAndGet(1)),
-                new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 0, 0), "Еда на граничное значение", 100, mealCount.addAndGet(1)),
-                new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 10, 0), "Завтрак", 1000, mealCount.addAndGet(1)),
-                new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 13, 0), "Обед", 500, mealCount.addAndGet(1)),
-                new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 410, mealCount.addAndGet(1))
-        ));
+    @Override
+    public void addTestData() {
+        meals.put(mealCount.incrementAndGet(), new Meal(mealCount.get(), LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500));
+        meals.put(mealCount.incrementAndGet(), new Meal(mealCount.get(), LocalDateTime.of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000));
+        meals.put(mealCount.incrementAndGet(), new Meal(mealCount.get(), LocalDateTime.of(2020, Month.JANUARY, 30, 20, 0), "Ужин", 500));
+        meals.put(mealCount.incrementAndGet(), new Meal(mealCount.get(), LocalDateTime.of(2020, Month.JANUARY, 31, 0, 0), "Еда на граничное значение", 100));
+        meals.put(mealCount.incrementAndGet(), new Meal(mealCount.get(), LocalDateTime.of(2020, Month.JANUARY, 31, 10, 0), "Завтрак", 1000));
+        meals.put(mealCount.incrementAndGet(), new Meal(mealCount.get(), LocalDateTime.of(2020, Month.JANUARY, 31, 13, 0), "Обед", 500));
+        meals.put(mealCount.incrementAndGet(), new Meal(mealCount.get(), LocalDateTime.of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 410));
     }
 
     @Override
     public List<Meal> getAll() {
-        return meals;
+        return new ArrayList<>(meals.values());
     }
 
     @Override
-    public void delete(Integer id) {
-        meals.remove(meals.stream().filter(meal -> meal.getId().equals(id)).findAny().orElse(null));
-    }
-
-    public Integer add(Meal meal) {
-        if (meal.getId() == 0) {
-            meal.setId(mealCount.addAndGet(1));
+    public void delete(int id) {
+        synchronized (mealCount) {
+            meals.remove(id);
         }
-        meals.add(meal);
-        return meal.getId();
     }
 
     @Override
-    public void update(Meal meal) {
-        delete(meal.getId());
-        add(meal);
+    public Meal add(Meal meal) {
+        synchronized (mealCount) {
+            meal.setId(mealCount.incrementAndGet());
+            meals.putIfAbsent(meal.getId(), meal);
+        }
+        return meal;
     }
 
     @Override
-    public Meal get(Integer id) {
-        return meals.stream().filter(meal -> meal.getId().equals(id)).findAny().orElse(null);
+    public Meal update(Meal meal) {
+        synchronized (mealCount) {
+            delete(meal.getId());
+            meals.put(meal.getId(), meal);
+        }
+        return meal;
+    }
+
+    @Override
+    public Meal get(int id) {
+        return meals.get(id);
     }
 }

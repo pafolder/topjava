@@ -3,11 +3,22 @@
 <html lang="ru">
 <head>
     <title>Users</title>
+    <script>
+        window.onload = function () {
+            document.getElementById("number-input").addEventListener('keypress', e => {
+                if (e.key >= '0' && e.key <= '9') // top key
+                    return true;
+                if (e.preventDefault) {
+                    e.preventDefault(); // Cancel event
+                }
+            });
+        }
+    </script>
 </head>
 <body>
 <h3><a href="index.html">Home</a></h3>
 <hr>
-<h2>Edit meal</h2>
+<h2><c:out value="${actionInCaption}"/> meal</h2>
 
 <form action="meals" method="POST">
     <input type="hidden" name="mealId" value="${meal.id}">
@@ -22,10 +33,11 @@
         </tr>
         <tr>
             <td>
-                <label for="2">Calories:</label>
+                <label for="number-input">Calories:</label>
             </td>
             <td>
-                <input type="text" id=2 size="4ch;" name="calories" value="${meal.calories}"/>
+                <input type="number" id="number-input" size="5ch;" name="calories"
+                       value="${meal.calories}"/>
             </td>
         </tr>
         <tr>
@@ -39,7 +51,7 @@
         <tr>
             <td>
                 <input type="submit" name="SubmitButton" value="Submit"/>
-                <input type="button" onclick="location.replace('meals')" value="Cancel"/>
+                <input type="button" onclick="location.replace('meals?action=newCanceled')" value="Cancel"/>
             </td>
         </tr>
     </table>

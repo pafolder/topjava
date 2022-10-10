@@ -10,6 +10,7 @@
         border-collapse: collapse;
         padding: 3px;
     }
+
     .small {
         font-size: small;
         background: lavenderblush;
@@ -23,7 +24,6 @@
 <p></p>
 <table>
     <tr class="small">
-        <th style="width: 4ch;">id</th>
         <th style="width: 20ch;">Date Time</th>
         <th style="width: 9ch;">Calories</th>
         <th style="width: 30ch;">Description</th>
@@ -31,19 +31,14 @@
         <th style="width: 8ch;"></th>
     </tr>
 
-   <c:forEach items="${mealsTo}" var="mealTo">
-        <c:set var="mealColor" value="green"/>
-        <c:if test="${mealTo.excess}">
-        <c:set var="mealColor" value="red"/>
-        </c:if>
-    <tr style="color:${mealColor}; text-align: center;">
-        <td><c:out value="${mealTo.id}"/></td>
-        <td><c:out value="${mealTo.date} ${mealTo.time}"/></td>
-        <td><c:out value="${mealTo.calories}"/></td>
-        <td style="text-align: left;">&nbsp;<c:out value=" ${mealTo.description}"/></td>
-        <td><a href="meals?action=edit&mealId=<c:out value="${mealTo.id}"/>">Edit</a></td>
-        <td><a href="meals?action=delete&mealId=<c:out value="${mealTo.id}"/>">Delete</a></td>
-    </tr>
+    <c:forEach items="${mealsTo}" var="mealTo">
+        <tr style="color:${mealTo.excess? "red": "green"}; text-align: center;">
+            <td>${mealTo.date}&nbsp;${mealTo.time}</td>
+            <td>${mealTo.calories}</td>
+            <td style="text-align: left;">&nbsp;${mealTo.description}</td>
+            <td><a href="meals?action=edit&mealId=<c:out value="${mealTo.id}"/>">Edit</a></td>
+            <td><a href="meals?action=delete&mealId=<c:out value="${mealTo.id}"/>">Delete</a></td>
+        </tr>
     </c:forEach>
 
 </table>
