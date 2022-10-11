@@ -19,7 +19,7 @@ public class MealsMemoryDao implements MealsDao {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(Integer id) {
         meals.remove(id);
     }
 
@@ -36,7 +36,7 @@ public class MealsMemoryDao implements MealsDao {
     }
 
     @Override
-    public Meal get(int id) {
+    public Meal get(Integer id) {
         return meals.get(id);
     }
 }
