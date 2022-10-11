@@ -14,6 +14,4 @@ public interface MealsDao {
     Meal update(Meal meal);
 
     Meal get(int id);
-
-    void addTestData();
 }

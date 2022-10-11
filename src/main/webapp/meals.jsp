@@ -36,7 +36,7 @@
             <td>${mealTo.date}&nbsp;${mealTo.time}</td>
             <td>${mealTo.calories}</td>
             <td style="text-align: left;">&nbsp;${mealTo.description}</td>
-            <td><a href="meals?action=edit&mealId=<c:out value="${mealTo.id}"/>">Edit</a></td>
+            <td><a href="meals?action=edit&mealId=${mealTo.id}">Edit</a></td>
             <td><a href="meals?action=delete&mealId=<c:out value="${mealTo.id}"/>">Delete</a></td>
         </tr>
     </c:forEach>

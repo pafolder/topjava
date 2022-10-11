@@ -18,7 +18,7 @@
 <body>
 <h3><a href="index.html">Home</a></h3>
 <hr>
-<h2><c:out value="${actionInCaption}"/> meal</h2>
+<h2>${isUpdate? "Edit": "New"} meal</h2>
 
 <form action="meals" method="POST">
     <input type="hidden" name="mealId" value="${meal.id}">
@@ -51,7 +51,7 @@
         <tr>
             <td>
                 <input type="submit" name="SubmitButton" value="Submit"/>
-                <input type="button" onclick="location.replace('meals?action=newCanceled')" value="Cancel"/>
+                <input type="button" onclick="location.replace('meals')" value="Cancel"/>
             </td>
         </tr>
     </table>
