@@ -3,15 +3,15 @@ package ru.javawebinar.topjava.dao;
 import ru.javawebinar.topjava.model.Meal;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MealsMemoryDao implements MealsDao {
     static final AtomicInteger mealCount = new AtomicInteger();
 
-    private final Map<Integer, Meal> meals = new HashMap<>();
+    private final Map<Integer, Meal> meals = new ConcurrentHashMap<>();
 
     @Override
     public List<Meal> getAll() {
