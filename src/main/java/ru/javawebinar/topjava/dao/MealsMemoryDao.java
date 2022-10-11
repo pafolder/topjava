@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MealsMemoryDao implements MealsDao {
-    static final AtomicInteger mealCount = new AtomicInteger();
+    private static final AtomicInteger mealCount = new AtomicInteger();
 
     private final Map<Integer, Meal> meals = new ConcurrentHashMap<>();
 
@@ -19,24 +19,22 @@ public class MealsMemoryDao implements MealsDao {
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(int id) {
         meals.remove(id);
     }
 
     @Override
-    public Meal add(Meal meal) {
-        meal.setId(mealCount.incrementAndGet());
-        meals.put(meal.getId(), meal);
-        return meal;
+    public Meal save(Meal meal) {
+        Integer id = meal.getId();
+        if (id == null) {
+            meal.setId(id = mealCount.incrementAndGet());
+        }
+        meals.put(id, meal);
+        return meals.get(id);
     }
 
     @Override
-    public Meal update(Meal meal) {
-        return (meal.getId() == null) ? add(meal) : meals.put(meal.getId(), meal);
-    }
-
-    @Override
-    public Meal get(Integer id) {
+    public Meal get(int id) {
         return meals.get(id);
     }
 }

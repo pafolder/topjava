@@ -21,17 +21,18 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class MealServlet extends HttpServlet {
     private static final int CALORIES_PER_DAY = 2000;
     private static final Logger log = getLogger(MealServlet.class);
-    private final MealsDao meals = new MealsMemoryDao();
+    private MealsDao mealDao;
 
     @Override
     public void init() {
-        meals.add(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500));
-        meals.add(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000));
-        meals.add(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 30, 20, 0), "Ужин", 500));
-        meals.add(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 31, 0, 0), "Еда на граничное значение", 100));
-        meals.add(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 31, 10, 0), "Завтрак", 1000));
-        meals.add(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 31, 13, 0), "Обед", 500));
-        meals.add(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 410));
+        mealDao = new MealsMemoryDao();
+        mealDao.save(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500));
+        mealDao.save(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000));
+        mealDao.save(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 30, 20, 0), "Ужин", 500));
+        mealDao.save(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 31, 0, 0), "Еда на граничное значение", 100));
+        mealDao.save(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 31, 10, 0), "Завтрак", 1000));
+        mealDao.save(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 31, 13, 0), "Обед", 500));
+        mealDao.save(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 410));
     }
 
     @Override
@@ -41,32 +42,27 @@ public class MealServlet extends HttpServlet {
             switch (action) {
                 case "delete":
                     int mealId = Integer.parseInt(request.getParameter("mealId"));
-                    meals.delete(mealId);
-                    response.sendRedirect("meals");
-                    return;
+                    mealDao.delete(mealId);
+                    break;
                 case "edit":
                     mealId = Integer.parseInt(request.getParameter("mealId"));
-                    request.setAttribute("meal", meals.get(mealId));
-                    request.setAttribute("isUpdate", true);
+                    request.setAttribute("meal", mealDao.get(mealId));
                     request.getRequestDispatcher("editmeal.jsp").forward(request, response);
-                    return;
+                    break;
                 case "new":
-                    Meal temporaryMeal = new Meal(null, LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 0);
-                    request.setAttribute("meal", temporaryMeal);
-                    request.setAttribute("isUpdate", false);
+                    Meal emptyMeal = new Meal(null, LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 0);
+                    request.setAttribute("meal", emptyMeal);
                     request.getRequestDispatcher("editmeal.jsp").forward(request, response);
-                    return;
+                    break;
             }
+            response.sendRedirect("meals");
+            return;
         }
-        createMealsToSetAttributeForward(request, response);
-    }
-
-    private void createMealsToSetAttributeForward(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setAttribute("mealsTo", MealsUtil.filteredByStreams(meals.getAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY));
+        request.setAttribute("mealsTo", MealsUtil.filteredByStreams(mealDao.getAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY));
         request.getRequestDispatcher("meals.jsp").forward(request, response);
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         request.setCharacterEncoding("UTF-8");
         String mealIdString = request.getParameter("mealId");
         Integer mealId = (mealIdString.length() != 0) ? Integer.parseInt(mealIdString) : null;
@@ -75,7 +71,7 @@ public class MealServlet extends HttpServlet {
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories"))
         );
-        meals.update(meal);
-        createMealsToSetAttributeForward(request, response);
+        mealDao.save(meal);
+        response.sendRedirect("meals");
     }
 }

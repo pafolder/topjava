@@ -7,7 +7,7 @@
 <body>
 <h3><a href="index.html">Home</a></h3>
 <hr>
-<h2>${isUpdate? "Edit": "New"} meal</h2>
+<h2>${meal.id==null? "New": "Edit"} meal</h2>
 
 <form action="meals" method="POST">
     <input type="hidden" name="mealId" value="${meal.id}">
@@ -45,16 +45,16 @@
         </tr>
     </table>
 </form>
-    <script>
-        window.onload = function () {
-            document.getElementById("number-input").addEventListener('keypress', e => {
-                if (e.key >= '0' && e.key <= '9') // top key
-                    return true;
-                if (e.preventDefault) {
-                    e.preventDefault(); // Cancel event
-                }
-            });
-        }
-    </script>
+<script>
+    window.onload = function () {
+        document.getElementById("number-input").addEventListener('keypress', e => {
+            if (e.key >= '0' && e.key <= '9') // top key
+                return true;
+            if (e.preventDefault) {
+                e.preventDefault(); // Cancel event
+            }
+        });
+    }
+</script>
 </body>
 </html>
