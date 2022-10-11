@@ -45,7 +45,6 @@ public class MealServlet extends HttpServlet {
                     response.sendRedirect("meals");
                     return;
                 case "edit":
-                    log.debug("mealId = {}", request.getParameter("mealId"));
                     mealId = Integer.parseInt(request.getParameter("mealId"));
                     request.setAttribute("meal", meals.get(mealId));
                     request.setAttribute("isUpdate", true);

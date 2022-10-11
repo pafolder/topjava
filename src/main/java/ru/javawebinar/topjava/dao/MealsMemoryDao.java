@@ -13,7 +13,6 @@ public class MealsMemoryDao implements MealsDao {
 
     private final Map<Integer, Meal> meals = new HashMap<>();
 
-
     @Override
     public List<Meal> getAll() {
         return new ArrayList<>(meals.values());

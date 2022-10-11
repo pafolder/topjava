@@ -3,17 +3,6 @@
 <html lang="ru">
 <head>
     <title>Users</title>
-    <script>
-        window.onload = function () {
-            document.getElementById("number-input").addEventListener('keypress', e => {
-                if (e.key >= '0' && e.key <= '9') // top key
-                    return true;
-                if (e.preventDefault) {
-                    e.preventDefault(); // Cancel event
-                }
-            });
-        }
-    </script>
 </head>
 <body>
 <h3><a href="index.html">Home</a></h3>
@@ -56,6 +45,16 @@
         </tr>
     </table>
 </form>
-
+    <script>
+        window.onload = function () {
+            document.getElementById("number-input").addEventListener('keypress', e => {
+                if (e.key >= '0' && e.key <= '9') // top key
+                    return true;
+                if (e.preventDefault) {
+                    e.preventDefault(); // Cancel event
+                }
+            });
+        }
+    </script>
 </body>
 </html>
