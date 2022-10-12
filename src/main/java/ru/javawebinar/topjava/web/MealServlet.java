@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
@@ -46,7 +47,14 @@ public class MealServlet extends HttpServlet {
                     break;
                 case "edit":
                     mealId = Integer.parseInt(request.getParameter("mealId"));
-                    request.setAttribute("meal", mealDao.get(mealId));
+                    Meal meal = mealDao.get(mealId);
+                    if (meal == null) {
+                        PrintWriter out = response.getWriter();
+                        out.println("<meta http-equiv='refresh' content='2; URL=meals'>");
+                        out.println("<p style='color:red;'>Sorry! The meal has been deleted!</p>");
+                        return;
+                    }
+                    request.setAttribute("meal", meal);
                     request.getRequestDispatcher("editmeal.jsp").forward(request, response);
                     break;
                 case "new":

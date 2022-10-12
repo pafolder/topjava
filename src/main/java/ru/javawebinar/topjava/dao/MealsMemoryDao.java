@@ -20,7 +20,9 @@ public class MealsMemoryDao implements MealsDao {
 
     @Override
     public void delete(int id) {
-        meals.remove(id);
+        synchronized (meals) {
+            meals.remove(id);
+        }
     }
 
     @Override
@@ -29,12 +31,15 @@ public class MealsMemoryDao implements MealsDao {
         if (id == null) {
             meal.setId(id = mealCount.incrementAndGet());
         }
-        meals.put(id, meal);
-        return meals.get(id);
+        synchronized (meals) {
+            meals.put(id, meal);
+            return meals.get(id);
+        }
     }
 
     @Override
     public Meal get(int id) {
-        return meals.get(id);
+        Meal meal = meals.get(id);
+        return (meal == null) ? null : new Meal(id, meal.getDateTime(), meal.getDescription(), meal.getCalories());
     }
 }
