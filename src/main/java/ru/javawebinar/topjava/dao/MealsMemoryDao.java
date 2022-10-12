@@ -20,16 +20,19 @@ public class MealsMemoryDao implements MealsDao {
 
     @Override
     public void delete(int id) {
-            meals.remove(id);
+        meals.remove(id);
     }
 
     @Override
-    public Meal save(Meal meal) {
-        Integer id = meal.getId();
-        if (id == null) {
-            meal.setId(id = mealCount.incrementAndGet());
-        }
-            return meals.merge(id, meal, (old, current) -> current);
+    public Meal add(Meal meal) {
+        Integer id;
+        meal.setId(id = mealCount.incrementAndGet());
+        return meals.merge(id, meal, (old, current) -> current);
+    }
+
+    @Override
+    public Meal update(Meal meal) {
+        return meals.merge(meal.getId(), meal, (old, current) -> current);
     }
 
     @Override
