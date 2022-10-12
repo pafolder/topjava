@@ -25,14 +25,18 @@ public class MealsMemoryDao implements MealsDao {
 
     @Override
     public Meal add(Meal meal) {
-        Integer id;
+        int id;
         meal.setId(id = mealCount.incrementAndGet());
         return meals.merge(id, meal, (old, current) -> current);
     }
 
     @Override
     public Meal update(Meal meal) {
-        return meals.merge(meal.getId(), meal, (old, current) -> current);
+        if (meals.get(meal.getId()) == null || meal.getId() > mealCount.get()) {
+            return null;
+        } else {
+            return meals.merge(meal.getId(), meal, (old, current) -> current);
+        }
     }
 
     @Override
