@@ -32,11 +32,7 @@ public class MealsMemoryDao implements MealsDao {
 
     @Override
     public Meal update(Meal meal) {
-        if (meals.get(meal.getId()) == null || meal.getId() > mealCount.get()) {
-            return null;
-        } else {
-            return meals.merge(meal.getId(), meal, (old, current) -> current);
-        }
+        return meals.computeIfPresent(meal.getId(), (k, v) -> meal);
     }
 
     @Override
