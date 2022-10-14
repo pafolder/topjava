@@ -4,11 +4,26 @@
     <title>Java Enterprise (Topjava)</title>
 </head>
 <body>
+
+<script type="text/javascript">
+    let selectedUserUrl = "meals?action=selectUser&user=" + 1;
+
+    function update() {
+        let select = document.getElementById('user');
+        let value = select.options[select.selectedIndex].value;
+        selectedUserUrl = "meals?action=selectUser&user=" + value;
+        document.getElementById("href").innerText = "Meals of User " + value;
+    }
+</script>
+
 <h3>Проект <a href="https://github.com/JavaWebinar/topjava" target="_blank">Java Enterprise (Topjava)</a></h3>
 <hr>
-<ul style="font-size: large">
-    <li><a href="users">Users</a></li>
-    <li><a href="meals">Meals</a></li>
-</ul>
+<br>
+<select id="user" onChange="update()" onload="update()">
+    <option value="1">User 1</option>
+    <option value="2">User 2</option>
+</select>
+<br>
+<p><a id="href" href="" onclick="window.open(selectedUserUrl);">Meals of User 1</a></p>
 </body>
 </html>

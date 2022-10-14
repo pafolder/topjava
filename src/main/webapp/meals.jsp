@@ -14,15 +14,55 @@
         .excess {
             color: red;
         }
+
+        dl {
+            margin: 10px;
+            padding: 0;
+        }
+
+        dt {
+            display: inline-block;
+            margin-left: 40px;
+            vertical-align: top;
+        }
+
+        dd {
+            display: inline-block;
+            margin-left: 0px;
+            vertical-align: top;
+        }
     </style>
 </head>
 <body>
 <section>
     <h3><a href="index.html">Home</a></h3>
     <hr/>
-    <h2>Meals</h2>
+    <h2>Meals of User ${userId}</h2>
+    <h4>Filter:</h4>
+    <form method="get" action="meals">
+        <dl>
+            <dd>Start Date:</dd>
+            <dd><input type="date" value="${requestScope.formDateTimeFilter.startDate}" name="filterStartDate" required>
+            </dd>
+            <dt>End Date:</dt>
+            <dd><input type="date" value="${requestScope.formDateTimeFilter.endDate}" name="filterEndDate" required>
+            </dd>
+        </dl>
+        <dl>
+            <dd>Start Time:</dd>
+            <dd><input type="time" value="${requestScope.formDateTimeFilter.startTime}" name="filterStartTime" required>
+            </dd>
+            <dt>End Time:</dt>
+            <dd><input type="time" value="${requestScope.formDateTimeFilter.endTime}" name="filterEndTime" required>
+            </dd>
+        </dl>
+        <button type="submit">Apply Filter</button>
+        <button type="reset">Reset</button>
+        <input type="hidden" name="action" value="filter">
+    </form>
+    <br>
     <a href="meals?action=create">Add Meal</a>
-    <br><br>
+    <br> <br>
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
         <tr>
@@ -34,7 +74,7 @@
         </tr>
         </thead>
         <c:forEach items="${requestScope.meals}" var="meal">
-            <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.MealTo"/>
+            <jsp:useBean id="meal" type="ru.javawebinar.topjava.to.MealTo"/>
             <tr class="${meal.excess ? 'excess' : 'normal'}">
                 <td>
                         <%--${meal.dateTime.toLocalDate()} ${meal.dateTime.toLocalTime()}--%>
