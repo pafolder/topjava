@@ -6,6 +6,9 @@ import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Period;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,13 +28,18 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public Meal save(Meal meal, int userId) {
-        if (meal.getUserId() != userId) {
+        if (meal == null) {
             return null;
         }
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
+            meal.setUserId(userId);
             repository.put(meal.getId(), meal);
             return meal;
+        }
+
+        if (meal.getUserId() != userId) {
+            return null;
         }
         // handle case: update, but not present in storage
         synchronized (repository.get(meal.getId())) {
@@ -63,8 +71,20 @@ public class InMemoryMealRepository implements MealRepository {
     public Collection<Meal> getAll(int userId) {
         return repository.values().stream()
                 .filter(meal -> meal.getUserId() == userId)
+                .sorted(Comparator.comparing(Meal::getDateTime).reversed())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Meal> getAllFilteredByDate(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, int userId) {
+        return repository.values().stream()
+                .filter(meal -> meal.getUserId() == userId)
+                .filter(meal -> meal.getDateTime().toLocalDate().isAfter(startDate.minus(Period.ofDays(1))))
+                .filter(meal -> meal.getDateTime().toLocalDate().isBefore(endDate.plus(Period.ofDays(1))))
+                .filter(meal -> meal.getUserId() == userId)
                 .sorted(Collections.reverseOrder(Comparator.comparing(Meal::getDateTime)))
                 .collect(Collectors.toList());
     }
+
 }
 

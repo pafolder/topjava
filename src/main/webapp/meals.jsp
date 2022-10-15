@@ -9,10 +9,20 @@
     <style>
         .normal {
             color: green;
+            border-color: black;
         }
 
         .excess {
             color: red;
+            border-color: black;
+        }
+
+        td {
+            border-color: black;
+        }
+
+        tr {
+            border-color: black;
         }
 
         dl {
@@ -63,14 +73,14 @@
     <br>
     <a href="meals?action=create">Add Meal</a>
     <br> <br>
-    <table border="1" cellpadding="8" cellspacing="0">
+    <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse">
         <thead>
-        <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Calories</th>
-            <th></th>
-            <th></th>
+        <tr style="text-align: center">
+            <td>Date</td>
+            <td>Description</td>
+            <td>Calories</td>
+            <td></td>
+            <td></td>
         </tr>
         </thead>
         <c:forEach items="${requestScope.meals}" var="meal">
@@ -83,7 +93,7 @@
                         ${fn:formatDateTime(meal.dateTime)}
                 </td>
                 <td>${meal.description}</td>
-                <td>${meal.calories}</td>
+                <td style="text-align: center">${meal.calories}</td>
                 <td><a href="meals?action=update&id=${meal.id}">Update</a></td>
                 <td><a href="meals?action=delete&id=${meal.id}">Delete</a></td>
             </tr>

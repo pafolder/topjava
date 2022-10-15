@@ -3,27 +3,30 @@
     <meta charset="UTF-8">
     <title>Java Enterprise (Topjava)</title>
 </head>
-<body>
-
+<body onload="update()">
 <script type="text/javascript">
-    let selectedUserUrl = "meals?action=selectUser&user=" + 1;
+    window.onload = update();
 
     function update() {
         let select = document.getElementById('user');
-        let value = select.options[select.selectedIndex].value;
-        selectedUserUrl = "meals?action=selectUser&user=" + value;
-        document.getElementById("href").innerText = "Meals of User " + value;
+        let val = select.options[select.selectedIndex].value;
+        document.getElementById("ref").href = "meals?action=changeUser&user=" + val;
+        return null;
     }
 </script>
 
 <h3>Проект <a href="https://github.com/JavaWebinar/topjava" target="_blank">Java Enterprise (Topjava)</a></h3>
 <hr>
 <br>
-<select id="user" onChange="update()" onload="update()">
-    <option value="1">User 1</option>
+<li> <a href="users">Users</a></li>
+<li>
+<a id="ref" href="meals">Meals of</a>
+    <label for="user"></label><select id = "user" onclick="update();">
+    <option selected value="1">User 1</option>
     <option value="2">User 2</option>
 </select>
+</li>
 <br>
-<p><a id="href" href="" onclick="window.open(selectedUserUrl);">Meals of User 1</a></p>
+
 </body>
 </html>

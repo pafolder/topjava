@@ -6,7 +6,6 @@
     <title>Meal</title>
     <style>
         dl {
-            background: none repeat scroll 0 0 #FAFAFA;
             margin: 8px 0;
             padding: 0;
         }
