@@ -4,15 +4,10 @@ import org.springframework.stereotype.Repository;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.util.MealsUtil;
-import ru.javawebinar.topjava.web.SecurityUtil;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.Period;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -23,14 +18,12 @@ public class InMemoryMealRepository implements MealRepository {
     private static final AtomicInteger counter = new AtomicInteger(0);
 
     {
-        MealsUtil.meals.forEach(meal -> save(meal, SecurityUtil.authUserId()));
+        MealsUtil.mealsForUser1.forEach(meal -> save(meal, 1));
+        MealsUtil.mealsForUser2.forEach(meal -> save(meal, 2));
     }
 
     @Override
     public Meal save(Meal meal, int userId) {
-        if (meal == null) {
-            return null;
-        }
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
             meal.setUserId(userId);
@@ -42,9 +35,7 @@ public class InMemoryMealRepository implements MealRepository {
             return null;
         }
         // handle case: update, but not present in storage
-        synchronized (repository.get(meal.getId())) {
-            return repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
-        }
+        return repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
     }
 
     @Override
@@ -53,9 +44,7 @@ public class InMemoryMealRepository implements MealRepository {
         if (meal == null || meal.getUserId() != userId) {
             return false;
         }
-        synchronized (repository.get(id)) {
-            return repository.remove(id) != null;
-        }
+        return repository.remove(id) != null;
     }
 
     @Override
@@ -68,7 +57,7 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     @Override
-    public Collection<Meal> getAll(int userId) {
+    public List<Meal> getAll(int userId) {
         return repository.values().stream()
                 .filter(meal -> meal.getUserId() == userId)
                 .sorted(Comparator.comparing(Meal::getDateTime).reversed())
@@ -76,12 +65,11 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     @Override
-    public Collection<Meal> getAllFilteredByDate(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, int userId) {
+    public Collection<Meal> getAllFilteredByDate(LocalDate startDate, LocalDate endDate, int userId) {
         return repository.values().stream()
                 .filter(meal -> meal.getUserId() == userId)
-                .filter(meal -> meal.getDateTime().toLocalDate().isAfter(startDate.minus(Period.ofDays(1))))
-                .filter(meal -> meal.getDateTime().toLocalDate().isBefore(endDate.plus(Period.ofDays(1))))
-                .filter(meal -> meal.getUserId() == userId)
+                .filter(startDate != null ? meal -> meal.getDateTime().toLocalDate().isAfter(startDate.minus(Period.ofDays(1))) : meal -> true)
+                .filter(endDate != null ? meal -> meal.getDateTime().toLocalDate().isBefore(endDate.plus(Period.ofDays(1))) : meal -> true)
                 .sorted(Collections.reverseOrder(Comparator.comparing(Meal::getDateTime)))
                 .collect(Collectors.toList());
     }

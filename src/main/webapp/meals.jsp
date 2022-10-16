@@ -44,30 +44,42 @@
     </style>
 </head>
 <body>
+<script type="text/javascript">
+    function MyReset() {
+        document.getElementById("startDate").value = "";
+        document.getElementById("endDate").value = "";
+        document.getElementById("startTime").value = "";
+        document.getElementById("endTime").value = "";
+        document.getElementById("theFilter").submit();
+        document.forms["theFilter"].submit();
+    }
+</script>
 <section>
     <h3><a href="index.html">Home</a></h3>
     <hr/>
-    <h2>Meals of User ${userId}</h2>
+    <h2>Meals of ${userName}</h2>
     <h4>Filter:</h4>
-    <form method="get" action="meals">
+    <form name="theFilter" id="theFilter" method="get" action="meals">
         <dl>
             <dd>Start Date:</dd>
-            <dd><input type="date" value="${requestScope.formDateTimeFilter.startDate}" name="filterStartDate" required>
+            <dd><input type="date" id="startDate" value="${requestScope.formDateTimeFilter.startDate}"
+                       name="filterStartDate">
             </dd>
             <dt>End Date:</dt>
-            <dd><input type="date" value="${requestScope.formDateTimeFilter.endDate}" name="filterEndDate" required>
+            <dd><input type="date" id="endDate" value="${requestScope.formDateTimeFilter.endDate}" name="filterEndDate">
             </dd>
         </dl>
         <dl>
             <dd>Start Time:</dd>
-            <dd><input type="time" value="${requestScope.formDateTimeFilter.startTime}" name="filterStartTime" required>
+            <dd><input type="time" id="startTime" value="${requestScope.formDateTimeFilter.startTime}"
+                       name="filterStartTime">
             </dd>
             <dt>End Time:</dt>
-            <dd><input type="time" value="${requestScope.formDateTimeFilter.endTime}" name="filterEndTime" required>
+            <dd><input type="time" id="endTime" value="${requestScope.formDateTimeFilter.endTime}" name="filterEndTime">
             </dd>
         </dl>
         <button type="submit">Apply Filter</button>
-        <button type="reset">Reset</button>
+        <button type="button" onclick="MyReset()">Reset</button>
         <input type="hidden" name="action" value="filter">
     </form>
     <br>

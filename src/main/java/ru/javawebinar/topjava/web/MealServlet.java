@@ -2,15 +2,12 @@ package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.model.Role;
-import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.util.DateTimeFilter;
 import ru.javawebinar.topjava.web.meal.MealRestController;
-import ru.javawebinar.topjava.web.user.AdminRestController;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -24,18 +21,18 @@ import java.util.Objects;
 public class MealServlet extends HttpServlet {
 
     private static final Logger log = LoggerFactory.getLogger(MealServlet.class);
+    private ConfigurableApplicationContext context;
     private MealRestController mealRestController;
-    DateTimeFilter mealsFilter;
 
     @Override
     public void init() {
         // java 7 automatic resource management (ARM)
-        try (ConfigurableApplicationContext appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml")) {
-            AdminRestController adminUserController = appCtx.getBean(AdminRestController.class);
-            adminUserController.create(new User(null, "userName", "email@mail.ru", "password", Role.ADMIN));
-            mealRestController = appCtx.getBean(MealRestController.class);
+        try {
+            context = new ClassPathXmlApplicationContext("spring/spring-app.xml");
+            mealRestController = context.getBean(MealRestController.class);
+        } catch (BeansException e) {
+            e.printStackTrace();
         }
-        mealsFilter = new DateTimeFilter(mealRestController.getAll());
     }
 
     @Override
@@ -49,14 +46,18 @@ public class MealServlet extends HttpServlet {
                 Integer.parseInt(request.getParameter("calories")), SecurityUtil.authUserId());
 
         log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
-        mealRestController.create(meal);
-        mealsFilter.resetFilter(mealRestController.getAll());
+        if (meal.isNew()) {
+            mealRestController.create(meal);
+        } else {
+            mealRestController.update(meal, meal.getId());
+        }
         response.sendRedirect("meals");
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
+        DateTimeFilter mealsFilter = new DateTimeFilter(request);
         switch (action == null ? "all" : action) {
             case "delete":
                 int id = getId(request);
@@ -66,21 +67,15 @@ public class MealServlet extends HttpServlet {
             case "create":
             case "update":
                 final Meal meal = "create".equals(action) ?
-                        new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000, SecurityUtil.authUserId()) :
+                        new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000, 0) :
                         mealRestController.get(getId(request));
                 request.setAttribute("meal", meal);
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
-            case "changeUser":
-                SecurityUtil.setUserId(Integer.parseInt(request.getParameter("user")));
-                mealsFilter.resetFilter(mealRestController.getAll());
-                response.sendRedirect("meals");
-                break;
-            case "filter":
-                mealsFilter.readParameters(request);
+
             case "all":
             default:
-                request.setAttribute("userId", SecurityUtil.authUserId());
+                request.setAttribute("userName", String.format("User %d", SecurityUtil.authUserId()));
                 request.setAttribute("formDateTimeFilter", mealsFilter);
                 request.setAttribute("meals", mealRestController.getAllTosFilteredByDate(
                         mealsFilter.getStartDate(), mealsFilter.getEndDate(),
@@ -98,6 +93,6 @@ public class MealServlet extends HttpServlet {
     @Override
     public void destroy() {
         super.destroy();
-        new AnnotationConfigApplicationContext(MealRestController.class).close();
+        context.close();
     }
 }

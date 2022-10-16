@@ -10,7 +10,7 @@
     function update() {
         let select = document.getElementById('user');
         let val = select.options[select.selectedIndex].value;
-        document.getElementById("ref").href = "meals?action=changeUser&user=" + val;
+        document.getElementById("ref").href = "users?action=changeUser&user=" + val;
         return null;
     }
 </script>
