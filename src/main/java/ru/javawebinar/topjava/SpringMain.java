@@ -6,6 +6,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
+import ru.javawebinar.topjava.web.meal.MealRestController;
 import ru.javawebinar.topjava.web.user.AdminRestController;
 
 import java.util.Arrays;
@@ -30,6 +31,8 @@ public class SpringMain {
             for (User user : adminUserController.getAll()) {
                 log.debug(user.getName() + " " + user.getEmail());
             }
+            MealRestController mealRestController = appCtx.getBean(MealRestController.class);
+            log.debug("mealToList.size = {}", mealRestController.getAll().size());
         }
     }
 }

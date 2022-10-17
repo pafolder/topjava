@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.util.StringUtils;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.util.DateTimeFilter;
 import ru.javawebinar.topjava.web.meal.MealRestController;
 
 import javax.servlet.ServletException;
@@ -14,7 +14,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
@@ -38,18 +40,24 @@ public class MealServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         request.setCharacterEncoding("UTF-8");
-        String id = request.getParameter("id");
+        Integer deleteId;
+        if ((deleteId = (Integer) request.getAttribute("deleteId")) != null) {
+            mealRestController.delete(deleteId);
+            response.sendRedirect("meals");
+            return;
+        }
 
+        String id = request.getParameter("id");
         Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
-                Integer.parseInt(request.getParameter("calories")), SecurityUtil.authUserId());
+                Integer.parseInt(request.getParameter("calories")), null);
 
         log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
         if (meal.isNew()) {
             mealRestController.create(meal);
         } else {
-            mealRestController.update(meal, meal.getId());
+            mealRestController.update(meal, getId(request));
         }
         response.sendRedirect("meals");
     }
@@ -57,12 +65,12 @@ public class MealServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
-        DateTimeFilter mealsFilter = new DateTimeFilter(request);
         switch (action == null ? "all" : action) {
             case "delete":
                 int id = getId(request);
-                mealRestController.delete(id);
-                response.sendRedirect("meals");
+                request.setAttribute("meal", mealRestController.get(id));
+                request.setAttribute("deleteId", id);
+                doPost(request, response);
                 break;
             case "create":
             case "update":
@@ -72,14 +80,19 @@ public class MealServlet extends HttpServlet {
                 request.setAttribute("meal", meal);
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
-
             case "all":
             default:
-                request.setAttribute("userName", String.format("User %d", SecurityUtil.authUserId()));
-                request.setAttribute("formDateTimeFilter", mealsFilter);
-                request.setAttribute("meals", mealRestController.getAllTosFilteredByDate(
-                        mealsFilter.getStartDate(), mealsFilter.getEndDate(),
-                        mealsFilter.getStartTime(), mealsFilter.getEndTime()));
+                String string;
+                string = request.getParameter("fStartDate");
+                LocalDate fStartDate = StringUtils.hasLength(string) ? LocalDate.parse(string) : null;
+                string = request.getParameter("fEndDate");
+                LocalDate fEndDate = StringUtils.hasLength(string) ? LocalDate.parse(string) : null;
+                string = request.getParameter("fStartTime");
+                LocalTime fStartTime = StringUtils.hasLength(string) ? LocalTime.parse(string) : null;
+                string = request.getParameter("fEndTime");
+                LocalTime fEndTime = StringUtils.hasLength(string) ? LocalTime.parse(string) : null;
+                request.setAttribute("meals", mealRestController.getAllTosFiltered(
+                        fStartDate, fEndDate, fStartTime, fEndTime));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
         }
@@ -92,7 +105,7 @@ public class MealServlet extends HttpServlet {
 
     @Override
     public void destroy() {
-        super.destroy();
         context.close();
+        super.destroy();
     }
 }

@@ -8,6 +8,7 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.MealsUtil;
+import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
 import java.time.LocalDate;
@@ -19,18 +20,18 @@ import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
 
 @Controller
 public class MealRestController {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(getClass());
     @Autowired
     private MealService service;
 
-    public List<Meal> getAll() {
-        log.info("getAllMeals for user {}", SecurityUtil.authUserId());
-        return (List<Meal>) service.getAll(SecurityUtil.authUserId());
+    public List<MealTo> getAll() {
+        return MealsUtil.getFilteredTos(service.getAll(SecurityUtil.authUserId()),
+                SecurityUtil.authUserCaloriesPerDay(), null, null);
     }
 
-    public List<MealTo> getAllTosFilteredByDate(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
+    public List<MealTo> getAllTosFiltered(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
         return MealsUtil.getFilteredTos(service.getAllFilteredByDate(startDate, endDate, SecurityUtil.authUserId()),
-                MealsUtil.DEFAULT_CALORIES_PER_DAY, startTime, endTime);
+                SecurityUtil.authUserCaloriesPerDay(), startTime, endTime);
     }
 
     public Meal get(int id) {
@@ -46,12 +47,17 @@ public class MealRestController {
     public Meal create(Meal meal) {
         log.info("create Meal for user {}", SecurityUtil.authUserId());
         checkNew(meal);
-        return service.create(meal, SecurityUtil.authUserId());
+        return service.save(meal, SecurityUtil.authUserId());
     }
 
     public Meal update(Meal meal, int id) {
         assureIdConsistent(meal, id);
         log.info("update Meal for user {}", SecurityUtil.authUserId());
-        return service.update(meal, SecurityUtil.authUserId());
+        Meal existingMeal = service.get(id, SecurityUtil.authUserId());
+        if (existingMeal == null) {
+            throw new NotFoundException("Updated meal has inconsistent userId");
+        }
+        meal.setUserId(existingMeal.getUserId());
+        return service.save(meal, SecurityUtil.authUserId());
     }
 }

@@ -11,11 +11,7 @@ public class DateTimeUtil {
         return ldt == null ? "" : ldt.format(DATE_TIME_FORMATTER);
     }
 
-    public static boolean isBetween(LocalTime lt, LocalTime startTime, LocalTime endTime) {
-        if (startTime != null && lt.compareTo(startTime) < 0) {
-            return false;
-        }
-        return endTime == null || lt.compareTo(endTime) <= 0;
+    public static boolean isBetweenHalfOpen(LocalTime lt, LocalTime startTime, LocalTime endTime) {
+        return (startTime == null || lt.compareTo(startTime) >= 0) && (endTime == null || lt.compareTo(endTime) < 0);
     }
 }
-

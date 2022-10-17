@@ -57,30 +57,29 @@
 <section>
     <h3><a href="index.html">Home</a></h3>
     <hr/>
-    <h2>Meals of ${userName}</h2>
+    <h2>Meals</h2>
     <h4>Filter:</h4>
     <form name="theFilter" id="theFilter" method="get" action="meals">
         <dl>
             <dd>Start Date:</dd>
-            <dd><input type="date" id="startDate" value="${requestScope.formDateTimeFilter.startDate}"
-                       name="filterStartDate">
+            <dd><input type="date" id="startDate" value="${param.fStartDate}"
+                       name="fStartDate">
             </dd>
             <dt>End Date:</dt>
-            <dd><input type="date" id="endDate" value="${requestScope.formDateTimeFilter.endDate}" name="filterEndDate">
+            <dd><input type="date" id="endDate" value="${param.fEndDate}" name="fEndDate">
             </dd>
         </dl>
         <dl>
             <dd>Start Time:</dd>
-            <dd><input type="time" id="startTime" value="${requestScope.formDateTimeFilter.startTime}"
-                       name="filterStartTime">
+            <dd><input type="time" id="startTime" value="${param.fStartTime}"
+                       name="fStartTime">
             </dd>
             <dt>End Time:</dt>
-            <dd><input type="time" id="endTime" value="${requestScope.formDateTimeFilter.endTime}" name="filterEndTime">
+            <dd><input type="time" id="endTime" value="${param.fEndTime}" name="fEndTime">
             </dd>
         </dl>
         <button type="submit">Apply Filter</button>
         <button type="button" onclick="MyReset()">Reset</button>
-        <input type="hidden" name="action" value="filter">
     </form>
     <br>
     <a href="meals?action=create">Add Meal</a>
