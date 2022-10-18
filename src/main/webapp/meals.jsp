@@ -53,6 +53,11 @@
         document.getElementById("theFilter").submit();
         document.forms["theFilter"].submit();
     }
+
+    function deleteSubmit(id) {
+        document.getElementById("idToDelete").value = id;
+        document.forms["delete-form"].submit();
+    }
 </script>
 <section>
     <h3><a href="index.html">Home</a></h3>
@@ -106,8 +111,12 @@
                 <td>${meal.description}</td>
                 <td style="text-align: center">${meal.calories}</td>
                 <td><a href="meals?action=update&id=${meal.id}">Update</a></td>
-                <td><a href="meals?action=delete&id=${meal.id}">Delete</a></td>
+                <td><a href="javascript:deleteSubmit(${meal.id})">Delete</a></td>
             </tr>
+            <form name="delete-form" style="height: 0" method="post" action="meals">
+                <input type="hidden" name="action" value="delete">
+                <input id="idToDelete" type="hidden" name="id" value="">
+            </form>
         </c:forEach>
     </table>
 </section>

@@ -40,38 +40,31 @@ public class MealServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         request.setCharacterEncoding("UTF-8");
-        Integer deleteId;
-        if ((deleteId = (Integer) request.getAttribute("deleteId")) != null) {
-            mealRestController.delete(deleteId);
-            response.sendRedirect("meals");
-            return;
-        }
-
-        String id = request.getParameter("id");
-        Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
-                LocalDateTime.parse(request.getParameter("dateTime")),
-                request.getParameter("description"),
+        String action = request.getParameter("action");
+        Meal meal = action.equals("delete") ? null : new Meal(
+                request.getParameter("id").isEmpty() ? null : Integer.valueOf(request.getParameter("id")),
+                LocalDateTime.parse(request.getParameter("dateTime")), request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")), null);
 
-        log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
-        if (meal.isNew()) {
-            mealRestController.create(meal);
-        } else {
-            mealRestController.update(meal, getId(request));
+        switch (action) {
+            case "delete":
+                mealRestController.delete(getId(request));
+                break;
+            case "update":
+                mealRestController.update(meal, getId(request));
+                break;
+            case "create":
+                mealRestController.create(meal);
+                break;
         }
         response.sendRedirect("meals");
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws
+            ServletException, IOException {
         String action = request.getParameter("action");
         switch (action == null ? "all" : action) {
-            case "delete":
-                int id = getId(request);
-                request.setAttribute("meal", mealRestController.get(id));
-                request.setAttribute("deleteId", id);
-                doPost(request, response);
-                break;
             case "create":
             case "update":
                 final Meal meal = "create".equals(action) ?
