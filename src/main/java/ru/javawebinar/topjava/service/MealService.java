@@ -3,16 +3,16 @@ package ru.javawebinar.topjava.service;
 import org.springframework.stereotype.Service;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
+import ru.javawebinar.topjava.util.exception.NotFoundException;
+import ru.javawebinar.topjava.web.SecurityUtil;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
 
 @Service
 public class MealService {
-
     private final MealRepository repository;
 
     public MealService(MealRepository repository) {
@@ -35,7 +35,16 @@ public class MealService {
         return repository.getAll(userId);
     }
 
-    public Collection<Meal> getAllFilteredByDate(LocalDate startDate, LocalDate endDate, int userId) {
+    public List<Meal> getAllFilteredByDates(LocalDate startDate, LocalDate endDate, int userId) {
         return repository.getAllFilteredByDate(startDate, endDate, userId);
+    }
+
+    public void update(Meal meal, int userId) {
+        Meal existingMeal = repository.get(meal.getId(), SecurityUtil.authUserId());
+        if (existingMeal == null) {
+            throw new NotFoundException("Updated meal has inconsistent userId");
+        }
+        meal.setUserId(existingMeal.getUserId());
+        checkNotFoundWithId(repository.save(meal, userId), meal.getId());
     }
 }

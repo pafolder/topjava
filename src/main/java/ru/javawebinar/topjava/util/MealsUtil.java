@@ -40,6 +40,11 @@ public class MealsUtil {
             new Meal(LocalDateTime.of(2021, Month.DECEMBER, 29, 7, 15), "Завтрак на скорость", 500, null)
     );
 
+
+    public static List<MealTo> getTos(Collection<Meal> meals, int caloriesPerDay) {
+        return filterByPredicate(meals, caloriesPerDay, meal -> true);
+    }
+
     public static List<MealTo> getFilteredTos(Collection<Meal> meals, int caloriesPerDay, LocalTime startTime, LocalTime endTime) {
         return filterByPredicate(meals, caloriesPerDay, meal -> DateTimeUtil.isBetweenHalfOpen(meal.getTime(), startTime, endTime));
     }

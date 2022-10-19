@@ -55,7 +55,7 @@
     }
 
     function deleteSubmit(id) {
-        document.getElementById("idToDelete").value = id;
+        document.getElementById("id").value = id;
         document.forms["delete-form"].submit();
     }
 </script>
@@ -67,24 +67,24 @@
     <form name="theFilter" id="theFilter" method="get" action="meals">
         <dl>
             <dd>Start Date:</dd>
-            <dd><input type="date" id="startDate" value="${param.fStartDate}"
-                       name="fStartDate">
+            <dd><input type="date" id="startDate" value="${param.startDate}"
+                       name="startDate">
             </dd>
             <dt>End Date:</dt>
-            <dd><input type="date" id="endDate" value="${param.fEndDate}" name="fEndDate">
+            <dd><input type="date" id="endDate" value="${param.endDate}" name="endDate">
             </dd>
         </dl>
         <dl>
             <dd>Start Time:</dd>
-            <dd><input type="time" id="startTime" value="${param.fStartTime}"
-                       name="fStartTime">
+            <dd><input type="time" id="startTime" value="${param.startTime}"
+                       name="startTime">
             </dd>
             <dt>End Time:</dt>
-            <dd><input type="time" id="endTime" value="${param.fEndTime}" name="fEndTime">
+            <dd><input type="time" id="endTime" value="${param.endTime}" name="endTime">
             </dd>
         </dl>
         <button type="submit">Apply Filter</button>
-        <button type="button" onclick="MyReset()">Reset</button>
+        <button type="submit" name = "action" value="reset">Reset</button>
     </form>
     <br>
     <a href="meals?action=create">Add Meal</a>
@@ -111,12 +111,14 @@
                 <td>${meal.description}</td>
                 <td style="text-align: center">${meal.calories}</td>
                 <td><a href="meals?action=update&id=${meal.id}">Update</a></td>
-                <td><a href="javascript:deleteSubmit(${meal.id})">Delete</a></td>
+                    <%--                <td><a href="javascript:deleteSubmit(${meal.id})">Delete</a></td>--%>
+                <td>
+                    <form name="delete-form" method="post" action="meals" style="display: inline">
+                        <input type="hidden" name="id" value="${meal.id}" id="id">
+                        <input type="submit" name="delete" value="Delete">
+                    </form>
+                </td>
             </tr>
-            <form name="delete-form" style="height: 0" method="post" action="meals">
-                <input type="hidden" name="action" value="delete">
-                <input id="idToDelete" type="hidden" name="id" value="">
-            </form>
         </c:forEach>
     </table>
 </section>

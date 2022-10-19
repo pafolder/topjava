@@ -3,30 +3,23 @@
     <meta charset="UTF-8">
     <title>Java Enterprise (Topjava)</title>
 </head>
-<body onload="update()">
-<script type="text/javascript">
-    window.onload = update();
-
-    function update() {
-        let select = document.getElementById('user');
-        let val = select.options[select.selectedIndex].value;
-        document.getElementById("ref").href = "users?action=changeUser&user=" + val;
-        return null;
-    }
-</script>
-
+<body>
 <h3>Проект <a href="https://github.com/JavaWebinar/topjava" target="_blank">Java Enterprise (Topjava)</a></h3>
 <hr>
 <br>
-<li> <a href="users">Users</a></li>
+<li><a href="users">Users</a></li>
+<br>
 <li>
-<a id="ref" href="meals">Meals of</a>
-    <label for="user"></label><select id = "user" onclick="update();">
-    <option selected value="1">User 1</option>
-    <option value="2">User 2</option>
-</select>
+    <form action="users" id="users" method="post" style="display: inline">
+        <input type="submit" value="Meals of">
+        <label>
+            <select name="id">
+                <option selected value="1">User 1</option>
+                <option value="2">User 2</option>
+            </select>
+        </label>
+    </form>
 </li>
 <br>
-
 </body>
 </html>
