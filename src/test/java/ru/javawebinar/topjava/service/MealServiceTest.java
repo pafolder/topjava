@@ -86,17 +86,17 @@ public class MealServiceTest {
 
     @Test
     public void update() {
-        Meal mealToUptate = service.create(new Meal(LocalDateTime.of(2020, Month.JANUARY, 30, 10, 1), "Завтрак", 500), USER_ID);
-        mealToUptate.setCalories(mealToUptate.getCalories() + 1);
-        mealToUptate.setDescription(mealToUptate.getDescription() + " updated");
-        mealToUptate.setDateTime(mealToUptate.getDateTime().plusDays(1));
-        service.update(mealToUptate, USER_ID);
-        Meal updatedMeal = service.get(mealToUptate.getId(), USER_ID);
-        assertThat(updatedMeal).usingRecursiveComparison().isEqualTo(mealToUptate);
+        Meal mealToUpdate = service.create(new Meal(LocalDateTime.of(2020, Month.JANUARY, 30, 10, 1), "Завтрак", 500), USER_ID);
+        mealToUpdate.setCalories(mealToUpdate.getCalories() + 1);
+        mealToUpdate.setDescription(mealToUpdate.getDescription() + " updated");
+        mealToUpdate.setDateTime(mealToUpdate.getDateTime().plusDays(1));
+        service.update(mealToUpdate, USER_ID);
+        Meal updatedMeal = service.get(mealToUpdate.getId(), USER_ID);
+        assertThat(updatedMeal).usingRecursiveComparison().isEqualTo(mealToUpdate);
     }
 
     @Test
-    public void getDeleteUpdadeNotFound() {
+    public void getDeleteUpdateNotFound() {
         assertThrows(NotFoundException.class, () -> service.get(0, USER_ID));
         assertThrows(NotFoundException.class, () -> service.delete(0, USER_ID));
         assertThrows(NotFoundException.class, () -> service.update(service.getAll(USER_ID).get(0), USER_ID + 1));
