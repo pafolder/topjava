@@ -4,32 +4,67 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
+import javax.sql.DataSource;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.assertMatch;
-import static ru.javawebinar.topjava.MealTestData.getUpdated;
 import static ru.javawebinar.topjava.MealTestData.getNew;
+import static ru.javawebinar.topjava.MealTestData.getUpdated;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.*;
 
-@ContextConfiguration({
-        "classpath:spring/spring-app.xml",
-        "classpath:spring/spring-db.xml"
-})
+@ContextConfiguration(loader = AnnotationConfigContextLoader.class)
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
+    @org.springframework.context.annotation.Configuration
+    @ComponentScan("ru.javawebinar.topjava")
+    public static class ContextConfiguration {
+        @Bean
+        public DataSource dataSource() {
+            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+            dataSource.setDriverClassName("org.postgresql.Driver");
+            dataSource.setUrl("jdbc:postgresql://localhost:5432/topjava");
+            dataSource.setUsername("user");
+            dataSource.setPassword("password");
+            return dataSource;
+        }
+
+        @Bean
+        public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+            return new JdbcTemplate(dataSource);
+        }
+
+        @Bean
+        public NamedParameterJdbcTemplate namedParameterJdbcTemplate(DataSource dataSource) {
+            return new NamedParameterJdbcTemplate(dataSource);
+        }
+    }
+
+    @Autowired
+    ConfigurableEnvironment env;
+
+    public MealServiceTest() {
+//        env.setActiveProfiles("inmemory");
+    }
 
     static {
         // Only for postgres driver logging
@@ -134,4 +169,5 @@ public class MealServiceTest {
         service.create(getNew(), USER_ID);
         assertThrows(DuplicateKeyException.class, () -> service.create(getNew(), USER_ID));
     }
+
 }
