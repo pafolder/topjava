@@ -1,7 +1,5 @@
 package ru.javawebinar.topjava.repository.jpa;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Meal;
@@ -12,15 +10,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 @Transactional(readOnly = true)
 public class JpaMealRepository implements MealRepository {
     @PersistenceContext
     private EntityManager em;
-
-    Logger log = LoggerFactory.getLogger(JpaMealRepository.class);
 
     @Override
     @Transactional
@@ -30,9 +25,7 @@ public class JpaMealRepository implements MealRepository {
             em.persist(meal);
             return meal;
         } else {
-            return em.createQuery("UPDATE Meal m SET m.dateTime =:dateTime, " +
-                            "m.description=:description, m.calories=:calories" +
-                            " WHERE m.id=:id AND m.user.id=:userId")
+            return em.createNamedQuery(Meal.UPDATE)
                     .setParameter("dateTime", meal.getDateTime())
                     .setParameter("description", meal.getDescription())
                     .setParameter("calories", meal.getCalories())
@@ -45,12 +38,8 @@ public class JpaMealRepository implements MealRepository {
     @Override
     @Transactional
     public boolean delete(int id, int userId) {
-        log.debug("Hello from delete");
-        return em.createQuery("DELETE FROM Meal m WHERE m.id=:id AND m.user.id=:userId")
-                .setParameter("id", id)
-                .setParameter("userId", userId)
+        return em.createNamedQuery(Meal.DELETE).setParameter("id", id).setParameter("userId", userId)
                 .executeUpdate() != 0;
-
     }
 
     @Override
@@ -59,23 +48,18 @@ public class JpaMealRepository implements MealRepository {
         if (foundMeal == null || foundMeal.getUser().getId() != userId) {
             return null;
         }
-        foundMeal.setUser(null);
         return foundMeal;
     }
 
     @Override
     public List<Meal> getAll(int userId) {
-        return em.createQuery("SELECT m FROM Meal m WHERE m.user.id =:userId ORDER BY m.dateTime DESC",
-                        Meal.class).setParameter("userId", userId).getResultList().stream()
-                .peek(meal -> meal.setUser(null)).collect(Collectors.toList());
+        return em.createNamedQuery(Meal.ALL_SORTED, Meal.class).setParameter("userId", userId).getResultList();
     }
 
     @Override
     public List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
-        return em.createQuery("SELECT m FROM Meal m WHERE m.user.id =:userId AND m.dateTime >= :startDateTime" +
-                        " AND m.dateTime < :endDateTime ORDER BY m.dateTime DESC", Meal.class)
+        return em.createNamedQuery(Meal.ALL_FILTERED_BY_DATETIME, Meal.class)
                 .setParameter("userId", userId).setParameter("startDateTime", startDateTime)
-                .setParameter("endDateTime", endDateTime).getResultList().stream()
-                .peek(meal -> meal.setUser(null)).collect(Collectors.toList());
+                .setParameter("endDateTime", endDateTime).getResultList();
     }
 }
