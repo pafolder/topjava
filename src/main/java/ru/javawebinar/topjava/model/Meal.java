@@ -1,8 +1,7 @@
 package ru.javawebinar.topjava.model;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -12,8 +11,6 @@ import java.time.LocalTime;
         @NamedQuery(name = Meal.ALL_FILTERED_BY_DATETIME, query = "SELECT m FROM Meal m WHERE m.user.id =:userId" +
                 " AND m.dateTime >= :startDateTime AND m.dateTime < :endDateTime ORDER BY m.dateTime DESC"),
         @NamedQuery(name = Meal.ALL_SORTED, query = "SELECT m FROM Meal m WHERE m.user.id =:userId ORDER BY m.dateTime DESC"),
-        @NamedQuery(name = Meal.UPDATE, query = "UPDATE Meal m SET m.dateTime =:dateTime, m.description=:description," +
-                " m.calories=:calories WHERE m.id=:id AND m.user.id=:userId")
 })
 @Entity
 @Table(name = "meals", uniqueConstraints = {
@@ -24,21 +21,23 @@ public class Meal extends AbstractBaseEntity {
     public static final String DELETE = "Meal.delete";
     public static final String ALL_FILTERED_BY_DATETIME = "Meal.getAllSortedByDateTime";
     public static final String ALL_SORTED = "Meal.getAllSorted";
-    public static final String UPDATE = "Meal.update";
 
     @Column(name = "date_time", nullable = false, columnDefinition = "timestamp")
     @NotNull
     private LocalDateTime dateTime;
 
     @Column(name = "description", nullable = false, columnDefinition = "varchar(255)")
-    @NotBlank
+    @Size(min = 2, max = 120)
     private String description;
 
     @Column(name = "calories", nullable = false, columnDefinition = "integer")
-    @NotNull
+    @Min(10)
+    @Max(5000)
     private int calories;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @NotNull
     private User user;
 
     public Meal() {
@@ -92,6 +91,16 @@ public class Meal extends AbstractBaseEntity {
     }
 
     public void setUser(User user) {
+//        if (user == null) {
+//            this.user = null;
+//            return;
+//        }
+//        if (this.user == null) {
+//            this.user = user;
+//        }
+//        if (this.user.getId()!= user.getId()) {
+//            throw new NotFoundException("Attempt to change user");
+//        }
         this.user = user;
     }
 

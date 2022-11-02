@@ -1,10 +1,10 @@
 package ru.javawebinar.topjava.service;
 
+import org.hibernate.LazyInitializationException;
 import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
+import org.junit.rules.Stopwatch;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -20,7 +20,8 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.*;
@@ -38,29 +39,21 @@ public class MealServiceTest {
     @Autowired
     private MealService service;
 
-    private long startTime;
-    private static long totalTestingDuration;
     private static final Logger logger = LoggerFactory.getLogger(MealServiceTest.class);
+    private static final StringBuilder sbSummary = new StringBuilder();
 
     @AfterClass
     public static void onFinishingAllTests() {
-        logger.info("Total duration of all tests is " + totalTestingDuration / 1000000 + " ms");
+        logger.info(sbSummary.toString());
     }
 
     @Rule
-    public final TestRule watchman = new TestWatcher() {
+    public Stopwatch stopwatch = new Stopwatch() {
         @Override
-        protected void starting(Description description) {
-            super.starting(description);
-            startTime = System.nanoTime();
-        }
-
-        @Override
-        protected void finished(Description description) {
-            super.finished(description);
-            long testDuration = System.nanoTime() - startTime;
-            totalTestingDuration += testDuration;
-            logger.info(description.getMethodName() + "test run duration is " + testDuration / 1000000 + " ms ");
+        protected void finished(long nanos, Description description) {
+            String infoString = description + " " + TimeUnit.NANOSECONDS.toMillis(nanos) + " ms";
+            sbSummary.append('\n').append(infoString);
+            logger.info(infoString);
         }
     };
 
@@ -83,14 +76,24 @@ public class MealServiceTest {
     @Test
     public void create() {
         Meal created = service.create(getNew(), USER_ID);
-        created.setUser(null);
         int newId = created.id();
         Meal newMeal = getNew();
         newMeal.setId(newId);
-        MEAL_MATCHER.assertMatch(created, newMeal);
+        try {
+            MEAL_MATCHER.assertMatch(created, newMeal);
+        } catch (LazyInitializationException e) {
+            if (created.getUser().getId() != USER_ID) {
+                throw new NotFoundException("Wrong user Id in create() test");
+            }
+        }
         Meal actual = service.get(newId, USER_ID);
-        actual.setUser(null);
-        MEAL_MATCHER.assertMatch(actual, newMeal);
+        try {
+            MEAL_MATCHER.assertMatch(actual, newMeal);
+        } catch (LazyInitializationException e) {
+            if (actual.getUser().getId() != USER_ID) {
+                throw new NotFoundException("Getting created meal failed in create() test");
+            }
+        }
     }
 
     @Test
@@ -102,8 +105,13 @@ public class MealServiceTest {
     @Test
     public void get() {
         Meal actual = service.get(ADMIN_MEAL_ID, ADMIN_ID);
-        actual.setUser(null);
-        MEAL_MATCHER.assertMatch(actual, adminMeal1);
+        try {
+            MEAL_MATCHER.assertMatch(actual, adminMeal1);
+        } catch (LazyInitializationException e) {
+            if (actual.getUser().getId() != ADMIN_ID) {
+                throw new NotFoundException("Getting meal of another user in get() test");
+            }
+        }
     }
 
     @Test
@@ -121,36 +129,66 @@ public class MealServiceTest {
         Meal updated = getUpdated();
         service.update(updated, USER_ID);
         Meal actual = service.get(MEAL1_ID, USER_ID);
-        actual.setUser(null);
-        MEAL_MATCHER.assertMatch(actual, getUpdated());
+        try {
+            MEAL_MATCHER.assertMatch(actual, getUpdated());
+        } catch (LazyInitializationException e) {
+            if (actual.getUser().getId() != USER_ID) {
+                throw new NotFoundException("Updating meal of another user in update() test");
+            }
+        }
     }
 
     @Test
     public void updateNotOwn() {
         assertThrows(NotFoundException.class, () -> service.update(meal1, ADMIN_ID));
         Meal actual = service.get(MEAL1_ID, USER_ID);
-        actual.setUser(null);
-        MEAL_MATCHER.assertMatch(actual, meal1);
+        try {
+            MEAL_MATCHER.assertMatch(actual, meal1);
+        } catch (LazyInitializationException e) {
+            if (actual.getUser().getId() != USER_ID) {
+                throw new NotFoundException("Wrong user Id in updateNotOwn() test");
+            }
+        }
     }
 
     @Test
     public void getAll() {
-        MEAL_MATCHER.assertMatch(service.getAll(USER_ID).stream()
-                .peek(m -> m.setUser(null)).collect(Collectors.toList()), meals);
+        List<Meal> allMeals = service.getAll(USER_ID);
+        try {
+            MEAL_MATCHER.assertMatch(allMeals, meals);
+        } catch (LazyInitializationException e) {
+            allMeals.forEach(meal -> {
+                if (meal.getUser().getId() != USER_ID)
+                    throw new NotFoundException("Wrong user Id in getAll() test");
+            });
+        }
     }
 
     @Test
     public void getBetweenInclusive() {
-        MEAL_MATCHER.assertMatch(service.getBetweenInclusive(
-                                LocalDate.of(2020, Month.JANUARY, 30),
-                                LocalDate.of(2020, Month.JANUARY, 30), USER_ID).stream()
-                        .peek(m -> m.setUser(null)).collect(Collectors.toList()),
-                meal3, meal2, meal1);
+        List<Meal> allMealsBetween = service.getBetweenInclusive(
+                LocalDate.of(2020, Month.JANUARY, 30),
+                LocalDate.of(2020, Month.JANUARY, 30), USER_ID);
+        try {
+            MEAL_MATCHER.assertMatch(allMealsBetween, meal3, meal2, meal1);
+        } catch (LazyInitializationException e) {
+            allMealsBetween.forEach(meal -> {
+                if (meal.getUser().getId() != USER_ID)
+                    throw new NotFoundException("Wrong user Id in getAllBetweenInclusive() test");
+            });
+        }
     }
 
     @Test
     public void getBetweenWithNullDates() {
-        MEAL_MATCHER.assertMatch(service.getBetweenInclusive(null, null, USER_ID).stream()
-                .peek(m -> m.setUser(null)).collect(Collectors.toList()), meals);
+        List<Meal> allMealsBetween = service.getBetweenInclusive(null, null, USER_ID);
+        try {
+            MEAL_MATCHER.assertMatch(allMealsBetween, meals);
+        } catch (LazyInitializationException e) {
+            allMealsBetween.forEach(meal -> {
+                if (meal.getUser().getId() != USER_ID)
+                    throw new NotFoundException("Wrong user Id in getAllBetweenWithNullDates() test");
+            });
+        }
     }
 }
