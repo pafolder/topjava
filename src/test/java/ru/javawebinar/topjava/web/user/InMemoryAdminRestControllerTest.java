@@ -1,41 +1,35 @@
 package ru.javawebinar.topjava.web.user;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 import ru.javawebinar.topjava.repository.inmemory.InMemoryUserRepository;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
-
-import java.util.Arrays;
 
 import static ru.javawebinar.topjava.UserTestData.NOT_FOUND;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
 
+@ContextConfiguration({"classpath:spring/spring-app.xml", "classpath:spring/inmemory.xml"})
+@RunWith(SpringRunner.class)
+@ActiveProfiles({"inmemory"})
 public class InMemoryAdminRestControllerTest {
     private static final Logger log = LoggerFactory.getLogger(InMemoryAdminRestControllerTest.class);
 
-    private static ConfigurableApplicationContext appCtx;
-    private static AdminRestController controller;
-    private static InMemoryUserRepository repository;
+    @Autowired
+    private AdminRestController controller;
 
-    @BeforeClass
-    public static void beforeClass() {
-        appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml", "spring/inmemory.xml");
-        log.info("\n{}\n", Arrays.toString(appCtx.getBeanDefinitionNames()));
-        controller = appCtx.getBean(AdminRestController.class);
-        repository = appCtx.getBean(InMemoryUserRepository.class);
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        appCtx.close();
-    }
+    @Autowired
+    private InMemoryUserRepository repository;
 
     @Before
     public void setUp() {
-        // re-initialize
         repository.init();
     }
 

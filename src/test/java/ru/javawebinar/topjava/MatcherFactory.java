@@ -1,8 +1,8 @@
 package ru.javawebinar.topjava;
 
-import java.util.List;
+import org.assertj.core.api.Assertions;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.List;
 
 /**
  * Factory for creating test matchers.
@@ -22,7 +22,7 @@ public class MatcherFactory {
         }
 
         public void assertMatch(T actual, T expected) {
-            assertThat(actual).usingRecursiveComparison().ignoringFields(fieldsToIgnore).isEqualTo(expected);
+            Assertions.assertThat(actual).usingRecursiveComparison().ignoringFields(fieldsToIgnore).isEqualTo(expected);
         }
 
         @SafeVarargs
@@ -31,7 +31,7 @@ public class MatcherFactory {
         }
 
         public void assertMatch(Iterable<T> actual, Iterable<T> expected) {
-            assertThat(actual).usingRecursiveFieldByFieldElementComparatorIgnoringFields(fieldsToIgnore).isEqualTo(expected);
+            Assertions.assertThat(actual).usingRecursiveFieldByFieldElementComparatorIgnoringFields(fieldsToIgnore).isEqualTo(expected);
         }
     }
 }
