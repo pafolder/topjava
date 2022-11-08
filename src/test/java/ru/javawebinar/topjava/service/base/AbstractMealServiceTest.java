@@ -1,4 +1,4 @@
-package ru.javawebinar.topjava.service.basic;
+package ru.javawebinar.topjava.service.base;
 
 import org.junit.Assert;
 import org.junit.Test;

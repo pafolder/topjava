@@ -22,5 +22,7 @@ public interface MealRepository {
     // ORDERED dateTime desc
     List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId);
 
-    UserWithMeals getUserWithMeals(int userId);
+    default UserWithMeals getUserWithMeals(int userId) {
+        throw new UnsupportedOperationException("MailRepository#getUserWithMeals(int userId) not implemented");
+    }
 }

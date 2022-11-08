@@ -1,4 +1,4 @@
-package ru.javawebinar.topjava.service.basic;
+package ru.javawebinar.topjava.service.base;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,11 +17,11 @@ import static ru.javawebinar.topjava.UserTestData.*;
 
 public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     @Autowired
-    private UserService service;
+    protected UserService service;
 
     @Before
     public void setup() {
-        cacheManager.getCache("users").clear();
+//        cacheManager.getCache("users").clear();
     }
 
     @Test

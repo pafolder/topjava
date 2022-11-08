@@ -18,6 +18,11 @@ public class UserWithMeals {
         return meals;
     }
 
+    public UserWithMeals(User user, List<Meal> meals) {
+        this.user = user;
+        this.meals = meals;
+    }
+
     public void setMeals(List<Meal> meals) {
         this.meals = meals;
     }

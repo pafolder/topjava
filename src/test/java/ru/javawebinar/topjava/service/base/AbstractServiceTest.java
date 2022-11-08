@@ -1,4 +1,4 @@
-package ru.javawebinar.topjava.service.basic;
+package ru.javawebinar.topjava.service.base;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -9,13 +9,13 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.javawebinar.topjava.ActiveDbProfileResolver;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -26,8 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 })
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
-//@ActiveProfiles(resolver = ActiveDbProfileResolver.class)
-//@ActiveProfiles({"jdbc","postgres"})
+@ActiveProfiles(resolver = ActiveDbProfileResolver.class)
 public abstract class AbstractServiceTest {
     @Autowired
     protected CacheManager cacheManager;
@@ -38,9 +37,7 @@ public abstract class AbstractServiceTest {
 
     @BeforeClass
     public static void logActiveProfiles() {
-        List<String> activeProfiles = List.of(new ActiveDbProfileResolver().resolve(ActiveDbProfileResolver.class));
-        activeProfiles.forEach(ap -> log.info("Active Profile: " + ap));
-
+        results.setLength(0);
     }
 
     @Rule
@@ -53,7 +50,6 @@ public abstract class AbstractServiceTest {
             log.info(result + " ms\n");
         }
     };
-
 
     @AfterClass
     public static void printResult() {

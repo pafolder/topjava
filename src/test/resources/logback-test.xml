@@ -18,15 +18,38 @@
         </encoder>
     </appender>
     <logger name="result" level="INFO" additivity="false">
+
         <appender-ref ref="result"/>
     </logger>
 
-<!--    <logger name="org.postgresql" level="debug"/>-->
-<!--    <logger name="org.springframework.jdbc" level="info"/>-->
+    <appender name="file" class="ch.qos.logback.core.FileAppender">
+        <file>${TOPJAVA_ROOT}/log/topjava-test.log</file>
+
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%date %-5level %logger{50}.%M:%L - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--    <logger name="org.postgresql" level="debug"/>-->
+    <!--    <logger name="org.springframework.jdbc" level="info"/>-->
     <logger name="ru.javawebinar.topjava" level="debug"/>
 
+    <appender name="yellowconsole" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%yellow(===) %highlight(%-5level) %blue(%class{50}.%M:%L) %yellow( === %msg%n)</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.springframework.orm.jpa" level="debug">
+        <appender-ref ref="yellowconsole"/>
+        <appender-ref ref="file"/>
+    </logger>
+
     <root level="INFO">
-        <appender-ref ref="console"/>
+<!--        <appender-ref ref="console"/>-->
+        <appender-ref ref="file"/>
     </root>
 
 </configuration>

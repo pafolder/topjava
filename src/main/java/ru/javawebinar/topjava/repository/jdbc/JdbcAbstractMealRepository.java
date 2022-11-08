@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public abstract class JdbcAbstractMealRepository implements MealRepository {
@@ -31,9 +32,18 @@ public abstract class JdbcAbstractMealRepository implements MealRepository {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
+    //    protected abstract void addParameter(MapSqlParameterSource map, LocalDateTime dateTime);
+    protected abstract Object getDateTimeInDBFormat(LocalDateTime dateTime);
+
     @Override
     public Meal save(Meal meal, int userId) {
-        MapSqlParameterSource map = getParameterMap(meal, userId);
+//        MapSqlParameterSource map = getParameterMap(meal, userId);
+        MapSqlParameterSource map = new MapSqlParameterSource()
+                .addValue("id", meal.getId())
+                .addValue("description", meal.getDescription())
+                .addValue("calories", meal.getCalories())
+                .addValue("date_time", getDateTimeInDBFormat(meal.getDateTime()))
+                .addValue("user_id", userId);
 
         if (meal.isNew()) {
             Number newId = insertMeal.executeAndReturnKey(map);
@@ -48,8 +58,6 @@ public abstract class JdbcAbstractMealRepository implements MealRepository {
         }
         return meal;
     }
-
-    protected abstract MapSqlParameterSource getParameterMap(Meal meal, int userId);
 
     @Override
     public boolean delete(int id, int userId) {
@@ -69,4 +77,10 @@ public abstract class JdbcAbstractMealRepository implements MealRepository {
                 "SELECT * FROM meals WHERE user_id=? ORDER BY date_time DESC", ROW_MAPPER, userId);
     }
 
+    @Override
+    public List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
+        return jdbcTemplate.query(
+                "SELECT * FROM meals WHERE user_id=?  AND date_time >=  ? AND date_time < ? ORDER BY date_time DESC",
+                ROW_MAPPER, userId, getDateTimeInDBFormat(startDateTime), getDateTimeInDBFormat(endDateTime));
+    }
 }
