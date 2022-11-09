@@ -4,7 +4,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.model.UserWithMeals;
 import ru.javawebinar.topjava.repository.MealRepository;
 
 import java.time.LocalDate;
@@ -12,6 +11,7 @@ import java.util.List;
 
 import static ru.javawebinar.topjava.util.DateTimeUtil.atStartOfDayOrMin;
 import static ru.javawebinar.topjava.util.DateTimeUtil.atStartOfNextDayOrMax;
+import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFound;
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
 
 @Service
@@ -48,7 +48,7 @@ public class MealService {
         return repository.save(meal, userId);
     }
 
-    public UserWithMeals getUserWithMeals(int userId) {
-        return repository.getUserWithMeals(userId);
+    public Meal getMealWithUser(int id) {
+        return checkNotFound(repository.getMealWithUser(id), "no Meal found");
     }
 }

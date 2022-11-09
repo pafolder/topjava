@@ -18,7 +18,7 @@ public class JdbcPostgressMealRepository extends JdbcAbstractMealRepository {
     }
 
     @Override
-    protected Object getDateTimeInDBFormat(LocalDateTime dateTime) {
+    protected LocalDateTime getDateTimeInDBFormat(LocalDateTime dateTime) {
         return dateTime;
     }
 }

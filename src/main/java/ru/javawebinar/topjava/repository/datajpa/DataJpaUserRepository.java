@@ -1,9 +1,12 @@
 package ru.javawebinar.topjava.repository.datajpa;
 
+import org.hibernate.Hibernate;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.Profiles;
+import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
@@ -38,6 +41,17 @@ public class DataJpaUserRepository implements UserRepository {
     @Override
     public User getByEmail(String email) {
         return crudRepository.getByEmail(email);
+    }
+
+    @Override
+    @Transactional
+    public User getUserWithMeals(int userId) {
+        User user = crudRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return null;
+        }
+        user.getMeals().forEach(meal -> Hibernate.unproxy(meal, Meal.class));
+        return user;
     }
 
     @Override

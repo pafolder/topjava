@@ -15,13 +15,13 @@ import java.util.List;
 
 public abstract class JdbcAbstractMealRepository implements MealRepository {
 
-    protected static final RowMapper<Meal> ROW_MAPPER = BeanPropertyRowMapper.newInstance(Meal.class);
+    private static final RowMapper<Meal> ROW_MAPPER = BeanPropertyRowMapper.newInstance(Meal.class);
 
-    protected final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
-    protected final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    protected final SimpleJdbcInsert insertMeal;
+    private final SimpleJdbcInsert insertMeal;
 
     public JdbcAbstractMealRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.insertMeal = new SimpleJdbcInsert(jdbcTemplate)
@@ -32,12 +32,8 @@ public abstract class JdbcAbstractMealRepository implements MealRepository {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
-    //    protected abstract void addParameter(MapSqlParameterSource map, LocalDateTime dateTime);
-    protected abstract Object getDateTimeInDBFormat(LocalDateTime dateTime);
-
     @Override
     public Meal save(Meal meal, int userId) {
-//        MapSqlParameterSource map = getParameterMap(meal, userId);
         MapSqlParameterSource map = new MapSqlParameterSource()
                 .addValue("id", meal.getId())
                 .addValue("description", meal.getDescription())
@@ -76,6 +72,8 @@ public abstract class JdbcAbstractMealRepository implements MealRepository {
         return jdbcTemplate.query(
                 "SELECT * FROM meals WHERE user_id=? ORDER BY date_time DESC", ROW_MAPPER, userId);
     }
+
+    protected abstract <T> T getDateTimeInDBFormat(LocalDateTime dateTime);
 
     @Override
     public List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {

@@ -42,6 +42,7 @@ public class UserService {
     }
 
     @Cacheable("users")
+    @CacheEvict(value = "users", allEntries = true)
     public List<User> getAll() {
         return repository.getAll();
     }
@@ -50,5 +51,9 @@ public class UserService {
     public void update(User user) {
         Assert.notNull(user, "user must not be null");
         checkNotFoundWithId(repository.save(user), user.id());
+    }
+
+    public User getUserWithMeals(int userId) {
+        return checkNotFound(repository.getUserWithMeals(userId), "no User found");
     }
 }

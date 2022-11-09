@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.Profiles;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.User;
-import ru.javawebinar.topjava.model.UserWithMeals;
 import ru.javawebinar.topjava.repository.MealRepository;
 
 import javax.persistence.EntityManager;
@@ -64,10 +63,5 @@ public class JpaMealRepository implements MealRepository {
                 .setParameter("startDateTime", startDateTime)
                 .setParameter("endDateTime", endDateTime)
                 .getResultList();
-    }
-
-    @Override
-    public UserWithMeals getUserWithMeals(int userId) {
-        return null;
     }
 }
