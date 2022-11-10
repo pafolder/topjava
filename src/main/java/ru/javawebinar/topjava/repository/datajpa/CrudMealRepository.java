@@ -12,13 +12,13 @@ import java.util.List;
 @Transactional(readOnly = true)
 public interface CrudMealRepository extends JpaRepository<Meal, Integer> {
 
-    @Query("SELECT new Meal(m.id, m.dateTime, m.description, m.calories) FROM  Meal m WHERE m.user.id = ?1 ORDER BY m.dateTime DESC")
+    @Query("SELECT m FROM  Meal m WHERE m.user.id = ?1 ORDER BY m.dateTime DESC")
     List<Meal> findByUserId(int userId);
 
     @Query("SELECT m FROM  Meal m WHERE m.dateTime >= ?1 AND m.dateTime < ?2 AND m.user.id = ?3 ORDER BY m.dateTime DESC")
     List<Meal> getBetween(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId);
 
-    @Query("SELECT new Meal(m.id, m.dateTime, m.description, m.calories) FROM  Meal m WHERE m.user.id = ?2 AND m.id = ?1")
+    @Query("SELECT m FROM  Meal m WHERE m.user.id = ?2 AND m.id = ?1")
     Meal findByIdAndUserId(int id, int userId);
 
     @Transactional

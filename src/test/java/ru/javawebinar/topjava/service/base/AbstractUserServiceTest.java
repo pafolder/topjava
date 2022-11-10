@@ -24,7 +24,7 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
 
     @Before
     public void setup() {
-//        cacheManager.getCache("users").clear();
+        cacheManager.getCache("users").clear();
     }
 
     @Test
@@ -79,7 +79,7 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void bgetAll() {
+    public void getAll() {
         List<User> all = service.getAll();
         USER_MATCHER.assertMatch(all, admin, guest, user);
     }

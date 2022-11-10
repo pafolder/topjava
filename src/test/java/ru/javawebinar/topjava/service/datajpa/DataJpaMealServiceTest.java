@@ -16,7 +16,6 @@ import static ru.javawebinar.topjava.UserTestData.USER_MATCHER;
 @ActiveProfiles(Profiles.DATAJPA)
 public class DataJpaMealServiceTest extends AbstractMealServiceTest {
     @Test
-    @Transactional
     public void getMealWithUserTest() {
         Meal mealWithUser = service.getMealWithUser(MEAL1_ID);
         MEAL_MATCHER.assertMatch(mealWithUser, meal1);

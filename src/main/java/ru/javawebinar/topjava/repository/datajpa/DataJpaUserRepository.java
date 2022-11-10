@@ -1,19 +1,14 @@
 package ru.javawebinar.topjava.repository.datajpa;
 
-import org.hibernate.Hibernate;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.javawebinar.topjava.Profiles;
-import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
 import java.util.List;
 
 @Repository
-@Profile(Profiles.DATAJPA)
 public class DataJpaUserRepository implements UserRepository {
     private static final Sort SORT_NAME_EMAIL = Sort.by(Sort.Direction.ASC, "name", "email");
 
@@ -46,12 +41,11 @@ public class DataJpaUserRepository implements UserRepository {
     @Override
     @Transactional
     public User getUserWithMeals(int userId) {
-        User user = crudRepository.findById(userId).orElse(null);
-        if (user == null) {
-            return null;
-        }
-        user.getMeals().forEach(meal -> Hibernate.unproxy(meal, Meal.class));
-        return user;
+        return crudRepository.findById(userId).map(u -> {
+            u.getMeals().forEach(meal -> {
+            });
+            return u;
+        }).orElse(null);
     }
 
     @Override
