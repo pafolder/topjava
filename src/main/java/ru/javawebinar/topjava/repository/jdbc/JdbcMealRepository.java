@@ -7,14 +7,20 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
+@Transactional(readOnly = true)
 public class JdbcMealRepository implements MealRepository {
 
     private static final RowMapper<Meal> ROW_MAPPER = BeanPropertyRowMapper.newInstance(Meal.class);
@@ -25,6 +31,8 @@ public class JdbcMealRepository implements MealRepository {
 
     private final SimpleJdbcInsert insertMeal;
 
+    private final DataSourceTransactionManager transactionManager;
+
     public JdbcMealRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.insertMeal = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("meals")
@@ -32,6 +40,7 @@ public class JdbcMealRepository implements MealRepository {
 
         this.jdbcTemplate = jdbcTemplate;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.transactionManager = new DataSourceTransactionManager(Objects.requireNonNull(jdbcTemplate.getDataSource()));
     }
 
     @Override
@@ -43,23 +52,45 @@ public class JdbcMealRepository implements MealRepository {
                 .addValue("date_time", meal.getDateTime())
                 .addValue("user_id", userId);
 
-        if (meal.isNew()) {
-            Number newId = insertMeal.executeAndReturnKey(map);
-            meal.setId(newId.intValue());
-        } else {
-            if (namedParameterJdbcTemplate.update("" +
-                    "UPDATE meals " +
-                    "   SET description=:description, calories=:calories, date_time=:date_time " +
-                    " WHERE id=:id AND user_id=:user_id", map) == 0) {
-                return null;
+        TransactionStatus txStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        try {
+            if (meal.isNew()) {
+                Number newId = insertMeal.executeAndReturnKey(map);
+                if (!newId.equals(0)) {
+                    transactionManager.commit(txStatus);
+                    meal.setId(newId.intValue());
+                    return meal;
+                } else {
+                    transactionManager.rollback(txStatus);
+                    return null;
+                }
+            } else {
+                if (namedParameterJdbcTemplate.update("" +
+                        "UPDATE meals " +
+                        "   SET description=:description, calories=:calories, date_time=:date_time " +
+                        " WHERE id=:id AND user_id=:user_id", map) == 0) {
+                    transactionManager.rollback(txStatus);
+                    return null;
+                }
+                transactionManager.commit(txStatus);
             }
+        } catch (Exception e) {
+            transactionManager.rollback(txStatus);
+            throw e;
         }
         return meal;
     }
 
     @Override
     public boolean delete(int id, int userId) {
-        return jdbcTemplate.update("DELETE FROM meals WHERE id=? AND user_id=?", id, userId) != 0;
+        TransactionStatus txStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        if (jdbcTemplate.update("DELETE FROM meals WHERE id=? AND user_id=?", id, userId) != 0) {
+            transactionManager.commit(txStatus);
+            return true;
+        } else {
+            transactionManager.rollback(txStatus);
+            return false;
+        }
     }
 
     @Override
