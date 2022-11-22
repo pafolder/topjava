@@ -9,10 +9,8 @@
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>
-    <h3><a href="${pageContext.request.contextPath}/"><spring:message code="app.home"/></a></h3>
-    <hr/>
     <h2><spring:message code="meal.title"/></h2>
-    <form method="get" action="meals">
+    <form method="post" action="${pageContext.request.contextPath}/meals/filter">
         <input type="hidden" name="action" value="filter">
         <dl>
             <dt><spring:message code="meal.fromdate"/>:</dt>
@@ -33,7 +31,9 @@
         <button type="submit"><spring:message code="meal.filter"/></button>
     </form>
     <hr/>
-    <a href="meals?action=create"><spring:message code="meal.add"/></a>
+    <form method="post" action="${pageContext.request.contextPath}/meals/add" style="display: inline">
+        <button type="submit" name = "id" value="0"><spring:message code="meal.add"/></button>
+    </form>
     <br><br>
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
@@ -57,15 +57,14 @@
                 <td>${meal.description}</td>
                 <td>${meal.calories}</td>
                 <td><a>
-                    <form method="post" action="meals" style="display: inline">
-                        <input type="hidden" name="id" value="${meal.id}">
-                        <input type="submit" name="update" value="Update">
+                    <form method="get" action="${pageContext.request.contextPath}/meals/update" style="display: inline">
+                        <button type="submit" name="id" value="${meal.id}"><spring:message code="meal.update"/></button>
                     </form>
                 </a></td>
                 <td><a>
-                    <form method="post" action="meals" style="display: inline">
+                    <form method="post" action="${pageContext.request.contextPath}/meals/delete" style="display: inline">
                         <input type="hidden" name="id" value="${meal.id}">
-                        <input type="submit" name="delete" value="Delete">
+                        <button type="submit" name="delete"><spring:message code="meal.delete"/></button>
                     </form>
                 </a></td>
             </tr>

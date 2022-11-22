@@ -12,13 +12,17 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.validation.annotation.Validated;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 
+import javax.validation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+@Validated
 @Repository
 @Transactional(readOnly = true)
 public class JdbcMealRepository implements MealRepository {
@@ -44,7 +48,12 @@ public class JdbcMealRepository implements MealRepository {
     }
 
     @Override
-    public Meal save(Meal meal, int userId) {
+    public Meal save(@Valid Meal meal, int userId) {
+        Set<ConstraintViolation<Meal>> violations = Validation.buildDefaultValidatorFactory().getValidator().validate(meal);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+
         MapSqlParameterSource map = new MapSqlParameterSource()
                 .addValue("id", meal.getId())
                 .addValue("description", meal.getDescription())

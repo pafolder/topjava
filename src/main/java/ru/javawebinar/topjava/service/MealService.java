@@ -3,9 +3,11 @@ package ru.javawebinar.topjava.service;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.validation.annotation.Validated;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import static ru.javawebinar.topjava.util.DateTimeUtil.atStartOfNextDayOrMax;
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
 
 @Service
+@Validated
 public class MealService {
 
     private final MealRepository repository;
@@ -43,7 +46,7 @@ public class MealService {
         checkNotFoundWithId(repository.save(meal, userId), meal.id());
     }
 
-    public Meal create(Meal meal, int userId) {
+    public Meal create(@Valid Meal meal, int userId) {
         Assert.notNull(meal, "meal must not be null");
         return repository.save(meal, userId);
     }
