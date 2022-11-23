@@ -32,9 +32,6 @@ public abstract class AbstractServiceTest {
     @Autowired
     private Environment env;
 
-    protected boolean isJDBC() {
-        return Arrays.asList(env.getActiveProfiles()).contains(JDBC);
-    }
     @ClassRule
     public static ExternalResource summary = TimingRules.SUMMARY;
 
@@ -50,5 +47,9 @@ public abstract class AbstractServiceTest {
                 throw getRootCause(e);
             }
         });
+    }
+
+    protected boolean isJDBC() {
+        return Arrays.asList(env.getActiveProfiles()).contains(JDBC);
     }
 }

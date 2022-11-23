@@ -1,13 +1,16 @@
 package ru.javawebinar.topjava.service;
 
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.DataAccessException;
+import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.UserTestData;
+import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.JpaUtil;
@@ -20,6 +23,8 @@ import java.util.Set;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.UserTestData.*;
+
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 
 public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     @Autowired
@@ -37,12 +42,6 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     @Before
     public void setup() {
         if (!isJDBC()) {
-            try {
-                applicationContext.getBean(JpaUtil.class);
-            } catch (NoSuchBeanDefinitionException e) {
-                e.printStackTrace();
-                throw e;
-            }
             cacheManager.getCache("users").clear();
             jpaUtil.clear2ndLevelHibernateCache();
         }
@@ -53,6 +52,16 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
         User created = service.create(getNew());
         int newId = created.id();
         User newUser = getNew();
+        newUser.setId(newId);
+        USER_MATCHER.assertMatch(created, newUser);
+        USER_MATCHER.assertMatch(service.get(newId), newUser);
+    }
+
+    @Test
+    public void create2Role() {
+        User created = service.create(getNew2Role());
+        int newId = created.id();
+        User newUser = getNew2Role();
         newUser.setId(newId);
         USER_MATCHER.assertMatch(created, newUser);
         USER_MATCHER.assertMatch(service.get(newId), newUser);
@@ -82,9 +91,24 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     }
 
     @Test
+    public void get2Roles() {
+        User user = service.get(ADMIN_ID);
+        USER_MATCHER.assertMatch(user, admin);
+    }
+
+    @Test
     public void getWithMeals() {
         User user = service.getWithMeals(USER_ID);
         USER_MATCHER.assertMatch(user, UserTestData.user);
+    }
+
+    @Test
+    public void getWithMeals2Roles() {
+        User user = service.getWithMeals(ADMIN_ID);
+        USER_MATCHER.assertMatch(user, admin);
+        Set<Meal> actual = user.getMeals();
+        Set<Meal> expected = Set.of(MealTestData.adminMeal1, MealTestData.adminMeal2);
+        MealTestData.MEAL_MATCHER.assertMatch(actual, expected);
     }
 
     @Test
@@ -99,10 +123,18 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void update() {
+    public void a_update() {
         User updated = getUpdated();
         service.update(updated);
-        USER_MATCHER.assertMatch(service.get(USER_ID), getUpdated());
+//        USER_MATCHER.assertMatch(service.get(USER_ID), getUpdated());
+        USER_MATCHER.assertMatch(service.getAll(), updated, admin, guest );
+    }
+
+    @Test
+    public void update2Roles() {
+        User updated2Role = getUpdated2Role();
+        service.update(getUpdated2Role());
+        USER_MATCHER.assertMatch(service.get(ADMIN_ID), getUpdated2Role());
     }
 
     @Test

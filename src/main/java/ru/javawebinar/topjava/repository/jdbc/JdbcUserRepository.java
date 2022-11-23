@@ -143,31 +143,20 @@ public class JdbcUserRepository implements UserRepository {
         List<Meal> meals = jdbcTemplate.query("SELECT * FROM meals WHERE meals.user_id=?", BeanPropertyRowMapper.newInstance(Meal.class), id);
         User user = getRoles(DataAccessUtils.singleResult(users));
         if (user != null) {
-            user.setMeals(meals);
+            user.setMeals(new HashSet<>(meals));
             return user;
         } else {
             return null;
         }
     }
 
-    private static class ProxyRole {
-        public String role;
-
-        public String getRole() {
-            return role;
-        }
-
-        public void setRole(String role) {
-            this.role = role;
-        }
-    }
 
     private User getRoles(User user) {
         if (user != null) {
-            List<ProxyRole> proxyRoles = jdbcTemplate.query("SELECT role FROM user_roles WHERE user_id=?", BeanPropertyRowMapper.newInstance(ProxyRole.class), user.getId());
+            List<String> roleStrings = jdbcTemplate.queryForList("SELECT role FROM user_roles WHERE user_id=?", String.class, user.getId());
             Set<Role> roles = new HashSet<>();
-            for (ProxyRole role : proxyRoles) {
-                roles.add(Role.valueOf(role.getRole()));
+            for (String roleString : roleStrings) {
+                roles.add(Role.valueOf(roleString));
             }
             user.setRoles(roles);
         }

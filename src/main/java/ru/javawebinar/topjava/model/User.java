@@ -24,7 +24,7 @@ import static ru.javawebinar.topjava.util.MealsUtil.DEFAULT_CALORIES_PER_DAY;
         @NamedQuery(name = User.DELETE, query = "DELETE FROM User u WHERE u.id=:id"),
         @NamedQuery(name = User.BY_EMAIL, query = "SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email=?1"),
         @NamedQuery(name = User.ALL_SORTED, query = "SELECT u FROM User u ORDER BY u.name, u.email"),
-        @NamedQuery(name = User.ALL_WITH_MEALS_SORTED, query = "SELECT u FROM User u JOIN Meal m ON u.id = m.user.id WHERE u.id=:id ORDER BY u.name, u.email"),
+        @NamedQuery(name = User.ALL_WITH_MEALS_SORTED, query = "SELECT u FROM User u JOIN FETCH u.meals WHERE u.id=:id ORDER BY u.name, u.email"),
 })
 @Entity
 @Table(name = "users")
@@ -72,7 +72,7 @@ public class User extends AbstractNamedEntity {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")//, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderBy("dateTime DESC")
     @OnDelete(action = OnDeleteAction.CASCADE) //https://stackoverflow.com/a/44988100/548473
-    private List<Meal> meals;
+    private Set<Meal> meals;
 
     public User() {
     }
@@ -143,7 +143,7 @@ public class User extends AbstractNamedEntity {
         return password;
     }
 
-    public List<Meal> getMeals() {
+    public Set<Meal> getMeals() {
         return meals;
     }
 
@@ -159,7 +159,7 @@ public class User extends AbstractNamedEntity {
                 '}';
     }
 
-    public void setMeals(List<Meal> meals) {
+    public void setMeals(Set<Meal> meals) {
         this.meals = meals;
     }
 }
