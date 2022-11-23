@@ -7,19 +7,24 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.validation.annotation.Validated;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 
-import javax.validation.*;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
+import javax.validation.Validation;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 @Validated
@@ -35,25 +40,28 @@ public class JdbcMealRepository implements MealRepository {
 
     private final SimpleJdbcInsert insertMeal;
 
-    private final DataSourceTransactionManager transactionManager;
+    private final PlatformTransactionManager transactionManager;
 
-    public JdbcMealRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    private final TransactionTemplate transactionTemplate;
+
+    public JdbcMealRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, PlatformTransactionManager transactionManager) {
         this.insertMeal = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("meals")
                 .usingGeneratedKeyColumns("id");
 
         this.jdbcTemplate = jdbcTemplate;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-        this.transactionManager = new DataSourceTransactionManager(Objects.requireNonNull(jdbcTemplate.getDataSource()));
+        this.transactionManager = transactionManager;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
+    @Transactional(propagation = Propagation.NESTED)
     @Override
     public Meal save(@Valid Meal meal, int userId) {
         Set<ConstraintViolation<Meal>> violations = Validation.buildDefaultValidatorFactory().getValidator().validate(meal);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
-
         MapSqlParameterSource map = new MapSqlParameterSource()
                 .addValue("id", meal.getId())
                 .addValue("description", meal.getDescription())
@@ -70,7 +78,6 @@ public class JdbcMealRepository implements MealRepository {
                     meal.setId(newId.intValue());
                     return meal;
                 } else {
-                    transactionManager.rollback(txStatus);
                     return null;
                 }
             } else {
@@ -78,28 +85,28 @@ public class JdbcMealRepository implements MealRepository {
                         "UPDATE meals " +
                         "   SET description=:description, calories=:calories, date_time=:date_time " +
                         " WHERE id=:id AND user_id=:user_id", map) == 0) {
-                    transactionManager.rollback(txStatus);
+//                    transactionManager.rollback(txStatus);
                     return null;
                 }
                 transactionManager.commit(txStatus);
             }
         } catch (Exception e) {
-            transactionManager.rollback(txStatus);
             throw e;
         }
         return meal;
     }
 
     @Override
+    @Transactional
     public boolean delete(int id, int userId) {
-        TransactionStatus txStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
-        if (jdbcTemplate.update("DELETE FROM meals WHERE id=? AND user_id=?", id, userId) != 0) {
-            transactionManager.commit(txStatus);
-            return true;
-        } else {
-            transactionManager.rollback(txStatus);
-            return false;
-        }
+        boolean[] result = new boolean[1];
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                result[0] = jdbcTemplate.update("DELETE FROM meals WHERE id=? AND user_id=?", id, userId) != 0;
+            }
+        });
+        return result[0];
     }
 
     @Override
