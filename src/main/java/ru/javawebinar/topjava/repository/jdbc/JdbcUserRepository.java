@@ -9,10 +9,8 @@ import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
@@ -37,17 +35,14 @@ public class JdbcUserRepository implements UserRepository {
 
     private final SimpleJdbcInsert insertUser;
 
-    private final TransactionTemplate transactionTemplate;
-
     @Autowired
-    public JdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, PlatformTransactionManager transactionManager) {
+    public JdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.insertUser = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
                 .usingGeneratedKeyColumns("id");
 
         this.jdbcTemplate = jdbcTemplate;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-        this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
     @Override
@@ -62,33 +57,25 @@ public class JdbcUserRepository implements UserRepository {
             Number newKey = insertUser.executeAndReturnKey(parameterSource);
             user.setId(newKey.intValue());
         } else {
-            boolean[] result = new boolean[1];
-            transactionTemplate.execute((status) -> {
-                        if (namedParameterJdbcTemplate.update("""
-                                   UPDATE users SET name=:name, email=:email, password=:password,
-                                   registered=:registered, enabled=:enabled, calories_per_day=:caloriesPerDay WHERE id=:id
-                                """, parameterSource) == 0) {
-                            result[0] = false;
-                        } else {
-                            result[0] &= (jdbcTemplate.update("DELETE FROM user_roles WHERE user_id=?", user.getId()) == 0);
-                        }
-                        return result[0];
-                    }
-            );
+            if (namedParameterJdbcTemplate.update("""
+                       UPDATE users SET name=:name, email=:email, password=:password,
+                       registered=:registered, enabled=:enabled, calories_per_day=:caloriesPerDay WHERE id=:id
+                    """, parameterSource) == 0) {
+                return null;
+            } else {
+                jdbcTemplate.update("DELETE FROM user_roles WHERE user_id=?", user.getId());
+            }
         }
-        transactionTemplate.execute((status) -> {
-            jdbcTemplate.batchUpdate("INSERT INTO user_roles (user_id, role) VALUES (?, ?)", new BatchPreparedStatementSetter() {
-                public void setValues(PreparedStatement ps, int i)
-                        throws SQLException {
-                    ps.setLong(1, user.getId());
-                    ps.setString(2, user.getRoles().toArray(new Role[0])[i].name());
-                }
+        jdbcTemplate.batchUpdate("INSERT INTO user_roles (user_id, role) VALUES (?, ?)", new BatchPreparedStatementSetter() {
+            public void setValues(PreparedStatement ps, int i)
+                    throws SQLException {
+                ps.setLong(1, user.getId());
+                ps.setString(2, user.getRoles().toArray(new Role[0])[i].name());
+            }
 
-                public int getBatchSize() {
-                    return user.getRoles().size();
-                }
-            });
-            return true;
+            public int getBatchSize() {
+                return user.getRoles().size();
+            }
         });
         return user;
     }
@@ -173,22 +160,10 @@ public class JdbcUserRepository implements UserRepository {
         public void setRole(String role) {
             this.role = role;
         }
-
     }
 
     private User getRoles(User user) {
         if (user != null) {
-// This works
-//            List<String> roleStrings = jdbcTemplate.query("SELECT role FROM user_roles WHERE user_id=?", rs -> {
-//                List<String> ls = new ArrayList<>();
-//                while (rs.next()) {
-//                    ls.add(rs.getString("role"));
-//                }
-//                return ls;
-//            }, user.getId());
-
-// This doesn't work!
-//            var roleStrings = jdbcTemplate.query("SELECT role FROM user_roles WHERE user_id=?", BeanPropertyRowMapper.newInstance(String.class),user.getId());
             List<ProxyRole> proxyRoles = jdbcTemplate.query("SELECT role FROM user_roles WHERE user_id=?", BeanPropertyRowMapper.newInstance(ProxyRole.class), user.getId());
             Set<Role> roles = new HashSet<>();
             for (ProxyRole role : proxyRoles) {
