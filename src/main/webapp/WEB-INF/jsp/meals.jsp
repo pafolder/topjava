@@ -10,7 +10,7 @@
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>
     <h2><spring:message code="meal.title"/></h2>
-    <form method="post" action="${pageContext.request.contextPath}/meals/filter">
+    <form method="get" action="meals/filter">
         <input type="hidden" name="action" value="filter">
         <dl>
             <dt><spring:message code="meal.fromdate"/>:</dt>
@@ -31,7 +31,7 @@
         <button type="submit"><spring:message code="meal.filter"/></button>
     </form>
     <hr/>
-    <form method="post" action="${pageContext.request.contextPath}/meals/add" style="display: inline">
+    <form method="get" action="${pageContext.request.contextPath}/meals/add" style="display: inline">
         <button type="submit" name = "id" value="0"><spring:message code="meal.add"/></button>
     </form>
     <br><br>
@@ -57,12 +57,12 @@
                 <td>${meal.description}</td>
                 <td>${meal.calories}</td>
                 <td><a>
-                    <form method="get" action="${pageContext.request.contextPath}/meals/update" style="display: inline">
+                    <form method="get" action="meals/update" style="display: inline">
                         <button type="submit" name="id" value="${meal.id}"><spring:message code="meal.update"/></button>
                     </form>
                 </a></td>
                 <td><a>
-                    <form method="post" action="${pageContext.request.contextPath}/meals/delete" style="display: inline">
+                    <form method="post" action="meals/delete" style="display: inline">
                         <input type="hidden" name="id" value="${meal.id}">
                         <button type="submit" name="delete"><spring:message code="meal.delete"/></button>
                     </form>

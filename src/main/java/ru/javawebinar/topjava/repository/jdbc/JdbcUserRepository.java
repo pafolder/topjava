@@ -16,16 +16,13 @@ import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 
 @Repository
 @Transactional(readOnly = true)
-public class JdbcUserRepository implements UserRepository {
+public class JdbcUserRepository extends ValidatorForJdbc implements UserRepository {
 
     private static final BeanPropertyRowMapper<User> ROW_MAPPER = BeanPropertyRowMapper.newInstance(User.class);
 
@@ -48,10 +45,7 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     @Transactional(propagation = Propagation.NESTED)
     public User save(User user) {
-        Set<ConstraintViolation<User>> violations = Validation.buildDefaultValidatorFactory().getValidator().validate(user);
-        if (!violations.isEmpty()) {
-            throw new ConstraintViolationException(violations);
-        }
+        validate(user);
         BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
         if (user.isNew()) {
             Number newKey = insertUser.executeAndReturnKey(parameterSource);

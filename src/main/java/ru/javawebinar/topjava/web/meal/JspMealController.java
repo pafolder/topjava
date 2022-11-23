@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 
@@ -19,14 +20,15 @@ import java.util.Objects;
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalDate;
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalTime;
 
+@RequestMapping(value = "/meals")
 @Controller
-public class JspMealRestController extends AbstractMealController {
+public class JspMealController extends AbstractMealController {
     @Autowired
-    public JspMealRestController(MealService service) {
+    public JspMealController(MealService service) {
         super(service);
     }
 
-    @GetMapping("meals")
+    @GetMapping("")
     public String getAll(HttpServletRequest request) {
         log.info("meals");
         request.setAttribute("meals", getAll());
@@ -38,9 +40,8 @@ public class JspMealRestController extends AbstractMealController {
         return Integer.parseInt(paramId);
     }
 
-    @PostMapping("meals/save")
+    @PostMapping("/save")
     public String postSave(HttpServletRequest request) throws UnsupportedEncodingException {
-        request.setCharacterEncoding("UTF-8");
         Meal meal = new Meal(
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
@@ -54,22 +55,19 @@ public class JspMealRestController extends AbstractMealController {
         return "redirect:/meals";
     }
 
-    @GetMapping("meals/update")
+    @GetMapping("/update")
     public String postUpdate(HttpServletRequest request) {
         request.setAttribute("meal", get(getId(request)));
         return "mealForm";
     }
 
-    @PostMapping("meals/delete")
+    @PostMapping("/delete")
     public String postDelete(HttpServletRequest request) {
-        if (request.getParameter("delete") != null) {
-            int id = getId(request);
-            delete(id);
-        }
+            delete(getId(request));
         return "redirect:/meals";
     }
 
-    @PostMapping("meals/filter")
+    @GetMapping("/filter")
     public String postFilter(HttpServletRequest request) {
         LocalDate startDate = parseLocalDate(request.getParameter("startDate"));
         LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
@@ -80,8 +78,8 @@ public class JspMealRestController extends AbstractMealController {
         return "meals";
     }
 
-    @PostMapping("meals/add")
-    public String postAdd(HttpServletRequest request) {
+    @GetMapping("/add")
+    public String add(HttpServletRequest request) {
         request.setAttribute("meal",
                 new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000));
         return "mealForm";

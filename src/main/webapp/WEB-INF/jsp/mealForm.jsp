@@ -7,11 +7,11 @@
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>
+    <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.Meal" scope="request"/>
     <spring:message code="meal.create" var="mealcreate"/>
     <spring:message code="meal.edit" var="mealedit"/>
-    <h2>${param.id == '0' ? mealcreate : mealedit}</h2>
-    <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.Meal" scope="request"/>
-    <form method="post" action="${pageContext.request.contextPath}/meals/save">
+    <h2>${meal.id == null ? mealcreate : mealedit}</h2>
+    <form method="post" action="meals/save">
         <input type="hidden" name="id" value="${meal.id}">
         <dl>
             <dt><spring:message code="meal.datetime"/>:</dt>
