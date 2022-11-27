@@ -32,4 +32,9 @@ class RootControllerTest extends AbstractControllerTest {
                         }
                 ));
     }
+
+    @Test
+    void mealsJsp() throws Exception {
+        perform(get("/meals")).andDo(print());
+    }
 }
