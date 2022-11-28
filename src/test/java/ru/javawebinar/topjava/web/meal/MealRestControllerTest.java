@@ -71,16 +71,6 @@ class MealRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    void getBetween() throws Exception {
-        perform(MockMvcRequestBuilders.get(REST_URL + "filter?start=" + START_DATETIME.toString() + "&end=" + END_DATETIME.toString())
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(MEALTO_MATCHER.contentJson(mealTo3, mealTo2, mealTo1));
-    }
-
-    @Test
     void getAll() throws Exception {
         perform(MockMvcRequestBuilders.get(REST_URL))
                 .andExpect(status().isOk())
@@ -97,5 +87,16 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(MEAL_MATCHER.contentJson(meal1));
 
+    }
+
+    @Test
+    void getBetween() throws Exception {
+        perform(MockMvcRequestBuilders.get(REST_URL + "filter?startDate=" + "2020-01-30" +
+                        "&endDate=" + "2020-01-30" + "&startTime=" + "00:00:00" + "&endTime=" + "23:00:00")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(MEALTO_MATCHER.contentJson(mealTo3, mealTo2, mealTo1));
     }
 }

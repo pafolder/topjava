@@ -2,14 +2,16 @@ package ru.javawebinar.topjava.web.meal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.to.MealTo;
+import ru.javawebinar.topjava.formatter.LocalDate.LocalDateFormat;
+import ru.javawebinar.topjava.formatter.LocalTime.LocalTimeFormat;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -29,14 +31,32 @@ public class MealRestController extends AbstractMealController {
     }
 
     @GetMapping("/filter")
-//    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    public List<MealTo> getBetween(@RequestParam
-                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                                   LocalDateTime start,
-                                   @RequestParam
-                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                                   LocalDateTime end) {
-        return super.getBetween(start.toLocalDate(), start.toLocalTime(), end.toLocalDate(), end.toLocalTime());
+//    public List<MealTo> getBetween(@RequestParam
+//                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+//                                       LocalDateTime start,
+//                                   @RequestParam
+//                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+//                                   LocalDateTime end) {
+    public List<MealTo> getBetween(
+            @RequestParam
+            @LocalDateFormat
+            LocalDate startDate,
+            @RequestParam
+            @LocalTimeFormat
+            LocalTime startTime,
+            @RequestParam
+            @LocalDateFormat
+            LocalDate endDate,
+            @RequestParam
+            @LocalTimeFormat
+            LocalTime endTime
+    ) {
+        return super.getBetween(
+                startDate == LocalDate.MIN ? null : startDate,
+                startTime == LocalTime.MIN ? null : startTime,
+                endDate == LocalDate.MIN ? null : endDate,
+                endTime == LocalTime.MIN ? null : endTime
+        );
     }
 
     @PostMapping
@@ -50,7 +70,7 @@ public class MealRestController extends AbstractMealController {
             super.update(meal, meal.getId());
             resultingMeal = meal;
         }
-        return meal;
+        return resultingMeal;
     }
 
     @DeleteMapping("/{mealId}")
