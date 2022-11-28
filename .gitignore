@@ -5,6 +5,4 @@ target
 log
 *.patch
 doc/
-
-
-
+/doc
