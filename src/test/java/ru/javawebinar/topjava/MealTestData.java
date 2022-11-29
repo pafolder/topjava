@@ -2,6 +2,7 @@ package ru.javawebinar.topjava;
 
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.to.MealTo;
+import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.time.Month;
 import java.util.List;
@@ -37,15 +38,5 @@ public class MealTestData {
         return new Meal(MEAL1_ID, meal1.getDateTime().plusMinutes(2), "Обновленный завтрак", 200);
     }
 
-    public static final MealTo mealTo1 = new MealTo(MEAL1_ID, of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500, false);
-    public static final MealTo mealTo2 = new MealTo(MEAL1_ID + 1, of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000, false);
-    public static final MealTo mealTo3 = new MealTo(MEAL1_ID + 2, of(2020, Month.JANUARY, 30, 20, 0), "Ужин", 500, false);
-    public static final MealTo mealTo4 = new MealTo(MEAL1_ID + 3, of(2020, Month.JANUARY, 31, 0, 0), "Еда на граничное значение", 100, false);
-    public static final MealTo mealTo5 = new MealTo(MEAL1_ID + 4, of(2020, Month.JANUARY, 31, 10, 0), "Завтрак", 500, false);
-    public static final MealTo mealTo6 = new MealTo(MEAL1_ID + 5, of(2020, Month.JANUARY, 31, 13, 0), "Обед", 1000, false);
-    public static final MealTo mealTo7 = new MealTo(MEAL1_ID + 6, of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 510, false);
-    public static final MealTo adminMealTo1 = new MealTo(ADMIN_MEAL_ID, of(2020, Month.JANUARY, 31, 14, 0), "Админ ланч", 510, false);
-    public static final MealTo adminMealTo2 = new MealTo(ADMIN_MEAL_ID + 1, of(2020, Month.JANUARY, 31, 21, 0), "Админ ужин", 1500, false);
-
-    public static final List<MealTo> mealsTo = List.of(mealTo7, mealTo6, mealTo5, mealTo4, mealTo3, mealTo2, mealTo1);
+    public static final List<MealTo> mealsTo = MealsUtil.getTos(meals, 2000);
 }

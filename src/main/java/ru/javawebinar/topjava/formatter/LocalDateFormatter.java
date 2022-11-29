@@ -1,4 +1,4 @@
-package ru.javawebinar.topjava.formatter.LocalDate;
+package ru.javawebinar.topjava.formatter;
 
 import org.springframework.format.Formatter;
 
@@ -14,9 +14,6 @@ public class LocalDateFormatter implements Formatter<LocalDate> {
 
     @Override
     public LocalDate parse(String text, Locale locale) {
-        if (text.length() == 0 || text.contains("null")) {
-            return LocalDate.MIN;
-        }
         return LocalDate.parse(text);
     }
 }

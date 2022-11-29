@@ -24,11 +24,12 @@
     </mvc:annotation-driven>
 
     <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
-        <property name="registerDefaultFormatters" value="false" />
+        <property name="registerDefaultFormatters" value="false"/>
         <property name="formatters">
             <set>
-                <bean class="ru.javawebinar.topjava.formatter.LocalDate.LocalDateFormatAnnotationFormatterFactory" />
-                <bean class="ru.javawebinar.topjava.formatter.LocalTime.LocalTimeFormatAnnotationFormatterFactory" />
+<!--                <bean class="ru.javawebinar.topjava.formatter.DateTimeFormatAnnotationFormatterFactory"/>-->
+                <bean class="ru.javawebinar.topjava.formatter.LocalDateFormatter"/>
+                <bean class="ru.javawebinar.topjava.formatter.LocalTimeFormatter"/>
             </set>
         </property>
     </bean>
@@ -42,17 +43,17 @@
           p:prefix="/WEB-INF/jsp/"
           p:suffix=".jsp"/>
 
-<!--
-    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource"
-          p:cacheSeconds="60"
-          p:defaultEncoding="UTF-8">
-        <property name="basenames">
-            <list>
-                <value>messages/app</value>
-            </list>
-        </property>
-    </bean>
--->
+    <!--
+        <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource"
+              p:cacheSeconds="60"
+              p:defaultEncoding="UTF-8">
+            <property name="basenames">
+                <list>
+                    <value>messages/app</value>
+                </list>
+            </property>
+        </bean>
+    -->
     <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource"
           p:cacheSeconds="5"
           p:defaultEncoding="UTF-8">
