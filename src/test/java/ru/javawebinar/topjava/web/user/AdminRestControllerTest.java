@@ -1,10 +1,12 @@
 package ru.javawebinar.topjava.web.user;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.UserTestData;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
@@ -86,13 +88,14 @@ class AdminRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    @EnabledIf("isGetWithMealsImplementedInActiveProfile")
     void getWithMeals() throws Exception {
-        perform(MockMvcRequestBuilders.get(REST_URL + "/with-meals/" +ADMIN_ID))
+        User userWithMeals = USER_MATCHER.readFromJson(perform(MockMvcRequestBuilders.get(REST_URL + "/with-meals"))
                 .andExpect(status().isOk())
                 .andDo(print())
                 // https://jira.spring.io/browse/SPR-14472
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(USER_MATCHER.contentJson(admin));
+                .andExpect(USER_MATCHER.contentJson(user)));
+        MealTestData.MEAL_MATCHER.assertMatch(userWithMeals.getMeals(), MealTestData.meals);
     }
-
 }

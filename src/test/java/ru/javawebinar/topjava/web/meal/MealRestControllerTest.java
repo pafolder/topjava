@@ -10,7 +10,6 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
-import ru.javawebinar.topjava.web.SecurityUtil;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,7 +21,7 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 
 
 class MealRestControllerTest extends AbstractControllerTest {
-    private static final String REST_URL = MealRestController.REST_URL + '/';
+    private static final String REST_URL = MealRestController.REST_URL;
     @Autowired
     MealService mealService;
 
@@ -36,7 +35,7 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .andDo(print());
         Meal created = MEAL_MATCHER.readFromJson(action);
         int newId = created.id();
-        Meal readMeal = mealService.get(newId, SecurityUtil.authUserId());
+        Meal readMeal = mealService.get(newId, USER_ID);
         meal.setId(newId);
         MEAL_MATCHER.assertMatch(created, meal);
         MEAL_MATCHER.assertMatch(readMeal, meal);
@@ -50,13 +49,13 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .content(JsonUtil.writeValue(getUpdated())))
                 .andExpect(status().isOk())
                 .andDo(print());
-        Meal readMeal = mealService.get(id, SecurityUtil.authUserId());
+        Meal readMeal = mealService.get(id, USER_ID);
         MEAL_MATCHER.assertMatch(readMeal, getUpdated());
     }
 
     @Test
     void delete() throws Exception {
-        perform(MockMvcRequestBuilders.delete(REST_URL + MEAL1_ID))
+        perform(MockMvcRequestBuilders.delete(REST_URL + "/" + MEAL1_ID))
                 .andDo(print())
                 .andExpect(status().isNoContent());
         assertThrows(NotFoundException.class, () -> mealService.get(MEAL1_ID, USER_ID));
@@ -73,7 +72,7 @@ class MealRestControllerTest extends AbstractControllerTest {
 
     @Test
     void get() throws Exception {
-        perform(MockMvcRequestBuilders.get(REST_URL + MEAL1_ID))
+        perform(MockMvcRequestBuilders.get(REST_URL + "/" + MEAL1_ID))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))

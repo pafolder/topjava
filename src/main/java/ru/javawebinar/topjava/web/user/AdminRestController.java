@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.javawebinar.topjava.model.User;
+import ru.javawebinar.topjava.web.SecurityUtil;
 
 import java.net.URI;
 import java.util.List;
@@ -16,14 +17,14 @@ public class AdminRestController extends AbstractUserController {
 
     static final String REST_URL = "/rest/admin/users";
 
-    @Override
     @GetMapping
+    @Override
     public List<User> getAll() {
         return super.getAll();
     }
 
-    @Override
     @GetMapping("/{id}")
+    @Override
     public User get(@PathVariable int id) {
         return super.get(id);
     }
@@ -37,30 +38,28 @@ public class AdminRestController extends AbstractUserController {
         return ResponseEntity.created(uriOfNewResource).body(created);
     }
 
-    @Override
     @DeleteMapping("/{id}")
+    @Override
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable int id) {
         super.delete(id);
     }
 
-    @Override
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@RequestBody User user, @PathVariable int id) {
         super.update(user, id);
     }
 
-    @Override
     @GetMapping("/by-email")
+    @Override
     public User getByMail(@RequestParam String email) {
         return super.getByMail(email);
     }
 
-    @Override
-    @GetMapping("/with-meals/{id}")
-    public User getWithMeals(@PathVariable int id) {
-        User user = super.getWithMeals(id);
-        return user;
+    @GetMapping("/with-meals")
+    public User getWithMeals() {
+        return super.getWithMeals(SecurityUtil.authUserId());
     }
 }
