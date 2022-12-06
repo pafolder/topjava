@@ -41,7 +41,25 @@ $(function () {
                     0,
                     "asc"
                 ]
-            ]
+            ],
+            createdRow: function (row, data, dataIndex) {
+                if (!$(data.enabled).is(':checked')) {
+                    $(row).css("color", "lightgray");
+                } else {
+                    $(row).css("color", "black");
+                }
+            }
         })
     );
 });
+
+function onActiveStatusChanged(userId) {
+    $.ajax({
+        url: ctx.ajaxUrl + userId + "/enabled",
+        type: "POST",
+        data: "isEnabled=" + $("#userActive" + userId).is(':checked')
+    }).done(function () {
+    location.reload();
+        successNoty("Active status changed");
+    });
+}

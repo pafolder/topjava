@@ -6,13 +6,15 @@
 <jsp:include page="fragments/headTag.jsp"/>
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
+
+<script src="resources/js/topjava.common.js" defer></script>
 <script src="resources/js/topjava.meals.js" defer></script>
 <div class="jumbotron pt-4">
     <div class="container">
 
-        <h3><spring:message code="meal.title"/> - My Meals</h3>
+        <h3><spring:message code="meal.title"/></h3>
 
-        <form method="get" action="meals/filter">
+        <form method="get" name="filterForm" action="meals/filter">
             <dl>
                 <dt><spring:message code="meal.startDate"/>:</dt>
                 <dd><input type="date" name="startDate" value="${param.startDate}"></dd>
@@ -29,15 +31,16 @@
                 <dt><spring:message code="meal.endTime"/>:</dt>
                 <dd><input type="time" name="endTime" value="${param.endTime}"></dd>
             </dl>
-            <button id="button_1998" type="submit"><spring:message code="meal.filter"/></button>
+            <button id="resetFilterButton" type="button"><spring:message code="meal.resetFilter"/></button>
+            <button id="filterButton" type="button"><spring:message code="meal.filter"/></button>
         </form>
         <hr>
-        <button class="btn btn-primary" id="addMealButton">
+        <button class="btn btn-primary" onclick="add()">
             <span class="fa fa-plus"></span>
-            <spring:message code="meal.add"/>&nbsp&nbsp;
+            <spring:message code="meal.add"/>
         </button>
         <hr>
-        <table id="mealsTable" class="table table-striped">
+        <table id="datatable" class="table table-striped">
             <thead>
             <tr>
                 <th><spring:message code="meal.dateTime"/></th>
@@ -59,17 +62,14 @@
                     <td>${meal.description}</td>
                     <td>${meal.calories}</td>
                     <td><a href="meals/update?id=${meal.id}"><spring:message code="common.update"/></a></td>
-                        <%--                <td><a href="meals/update?id=${meal.id}"><spring:message code="common.update"/></a></td>--%>
-                        <%--                 <td id="updateCell" class="fa fa-tag"><a><spring:message code="common.update"/></a></td>--%>
-                        <%--                        <td><button onclick="deleteMeal(${meal.id})"><spring:message code="common.delete"/></button></td>--%>
-                    <td><a class="deleteMeal"><spring:message code="common.delete"/></a></td>
+                    <td><a class="delete"><span class="fa fa-remove"></span></a></td>
                 </tr>
             </c:forEach>
         </table>
     </div>
 </div>
 
-<div class="modal fade" tabindex="-1" id="addMeal">
+<div class="modal fade" tabindex="-1" id="editRow">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -78,7 +78,7 @@
                 <button type="button" class="close" data-dismiss="modal" onclick="closeNoty()">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="addMealForm">
+                <form id="detailsForm">
                     <input type="hidden" id="id" name="id">
 
                     <div class="form-group">
@@ -106,7 +106,7 @@
                     <span class="fa fa-close"></span>
                     <spring:message code="common.cancel"/>
                 </button>
-                <button type="button" class="btn btn-primary" onclick="saveMeal()">
+                <button type="button" class="btn btn-primary" onclick="save()">
                     <span class="fa fa-check"></span>
                     <spring:message code="common.save"/>
                 </button>
