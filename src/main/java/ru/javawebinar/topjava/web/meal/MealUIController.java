@@ -23,7 +23,8 @@ public class MealUIController extends AbstractMealController {
     }
 
     @GetMapping
-    public List<MealTo> getMeals() {
+    @Override
+    public List<MealTo> getAll() {
         return super.getAll();
     }
 

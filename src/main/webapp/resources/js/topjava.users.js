@@ -43,23 +43,22 @@ $(function () {
                 ]
             ],
             createdRow: function (row, data, dataIndex) {
-                if (!$(data.enabled).is(':checked')) {
-                    $(row).css("color", "lightgray");
-                } else {
-                    $(row).css("color", "black");
-                }
+                $(row).addClass($(data.enabled).is(':checked') ? "activeUser" : "inactiveUser");
             }
         })
     );
 });
 
-function onActiveStatusChanged(userId) {
+function onActiveStatusChanged(userId, object) {
+    let isEnabled = $("#userActive" + userId).is(':checked');
+    let row = $(object).closest('tr');
     $.ajax({
         url: ctx.ajaxUrl + userId + "/enabled",
         type: "POST",
-        data: "isEnabled=" + $("#userActive" + userId).is(':checked')
+        data: "isEnabled=" + isEnabled
     }).done(function () {
-    location.reload();
-        successNoty("Active status changed");
+        $(row).removeClass(isEnabled ? 'inactiveUser' : 'activeUser');
+        $(row).addClass(isEnabled ? 'activeUser' : 'inactiveUser');
+        successNoty("Status changed to " + (isEnabled ? "Active" : "Disabled"));
     });
 }

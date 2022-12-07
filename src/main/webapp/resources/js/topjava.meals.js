@@ -1,4 +1,5 @@
 const mealAjaxUrl = "ui/meals/";
+const filterForm = "filterForm";
 
 // https://stackoverflow.com/a/5064235/548473
 const ctx = {
@@ -44,13 +45,13 @@ $(document).ready(function () {
 $("#filterButton").click(function () {
     $.ajax({
         type: "GET",
-        url: ctx.ajaxUrl + "filter?" + $("[name='filterForm']").serialize(),
+        url: ctx.ajaxUrl + "filter?" + $("[name=filterform]").serialize(),
     }).done(function (data) {
         ctx.datatableApi.clear().rows.add(data).draw();
     });
 });
 
 $("#resetFilterButton").click(function () {
-    $("[name='filterForm']").trigger("reset");
+    $("[name=filterForm]").trigger("reset");
     updateTable();
 });
