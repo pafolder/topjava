@@ -24,7 +24,13 @@ $(function () {
             "info": true,
             "columns": [
                 {
-                    "data": "dateTime"
+                    "data": "dateTime",
+                    "render": function (date, type, row) {
+                        if (type === "display") {
+                            return date.substring(0, 10) + " " + date.substring(11,16);
+                        }
+                        return date;
+                    }
                 },
                 {
                     "data": "description"
@@ -33,12 +39,18 @@ $(function () {
                     "data": "calories"
                 },
                 {
-                    "defaultContent": "Edit",
-                    "orderable": false
+                    "data": "excess",
+                    "visible": false
+                },
+                {
+                    "orderable": false,
+                    "defaultContent": "",
+                    "render": renderEditBtn
                 },
                 {
                     "defaultContent": "Delete",
-                    "orderable": false
+                    "orderable": false,
+                    "render": renderDeleteBtn
                 }
             ],
             "order": [
@@ -46,7 +58,14 @@ $(function () {
                     0,
                     "desc"
                 ]
-            ]
+            ],
+            "createdRow": function (row, data, dataIndex) {
+                if (data["excess"] === true) {
+                    $(row).addClass('withexcess');
+                } else {
+                    $(row).addClass('withoutexcess');
+                }
+            }
         })
     );
 });

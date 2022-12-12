@@ -10,6 +10,7 @@ function makeEditable(datatableApi) {
 
     // solve problem with cache in IE: https://stackoverflow.com/a/4303862/548473
     $.ajaxSetup({cache: false});
+    ctx.updateTable();
 }
 
 function add() {
