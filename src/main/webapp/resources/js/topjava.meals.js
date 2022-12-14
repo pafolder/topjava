@@ -4,11 +4,7 @@ const mealAjaxUrl = "profile/meals/";
 const ctx = {
     ajaxUrl: mealAjaxUrl,
     updateTable: function () {
-        $.ajax({
-            type: "GET",
-            url: mealAjaxUrl + "filter",
-            data: $("#filter").serialize()
-        }).done(updateTableByData);
+        $.get(mealAjaxUrl, updateTableByData);
     }
 }
 
@@ -27,7 +23,7 @@ $(function () {
                     "data": "dateTime",
                     "render": function (date, type, row) {
                         if (type === "display") {
-                            return date.substring(0, 10) + " " + date.substring(11,16);
+                            return date.substring(0, 10) + " " + date.substring(11, 16);
                         }
                         return date;
                     }
@@ -37,10 +33,6 @@ $(function () {
                 },
                 {
                     "data": "calories"
-                },
-                {
-                    "data": "excess",
-                    "visible": false
                 },
                 {
                     "orderable": false,
@@ -60,11 +52,7 @@ $(function () {
                 ]
             ],
             "createdRow": function (row, data, dataIndex) {
-                if (data["excess"] === true) {
-                    $(row).addClass('withexcess');
-                } else {
-                    $(row).addClass('withoutexcess');
-                }
+                $(row).closest('tr').attr("data-meal-excess", (data["excess"] === true));
             }
         })
     );

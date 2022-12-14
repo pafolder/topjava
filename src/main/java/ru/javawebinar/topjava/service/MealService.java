@@ -6,7 +6,6 @@ import org.springframework.util.Assert;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 
-import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -39,12 +38,12 @@ public class MealService {
         return repository.getAll(userId);
     }
 
-    public void update(@Valid Meal meal, int userId) {
+    public void update(Meal meal, int userId) {
         Assert.notNull(meal, "meal must not be null");
         checkNotFoundWithId(repository.save(meal, userId), meal.id());
     }
 
-    public Meal create(@Valid Meal meal, int userId) {
+    public Meal create(Meal meal, int userId) {
         Assert.notNull(meal, "meal must not be null");
         return repository.save(meal, userId);
     }

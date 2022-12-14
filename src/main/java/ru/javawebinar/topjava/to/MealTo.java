@@ -1,13 +1,10 @@
 package ru.javawebinar.topjava.to;
 
-import org.springframework.format.annotation.DateTimeFormat;
-
 import java.beans.ConstructorProperties;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class MealTo extends BaseTo {
-   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime dateTime;
 
     private String description;
@@ -26,10 +23,6 @@ public class MealTo extends BaseTo {
 
     public void setCalories(int calories) {
         this.calories = calories;
-    }
-
-    public void setExcess(boolean excess) {
-        this.excess = excess;
     }
 
     @ConstructorProperties({"id", "dateTime", "description", "calories", "excess"})
@@ -51,10 +44,6 @@ public class MealTo extends BaseTo {
 
     public int getCalories() {
         return calories;
-    }
-
-    public boolean isExcess() {
-        return excess;
     }
 
     @Override
