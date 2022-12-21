@@ -96,7 +96,7 @@ class ProfileRestControllerTest extends AbstractControllerTest {
                 .with(userHttpBasic(user))
                 .content(JsonUtil.writeValue(updatedTo)))
                 .andDo(print())
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

@@ -87,7 +87,7 @@ class MealRestControllerTest extends AbstractControllerTest {
         perform(MockMvcRequestBuilders.put(REST_URL + MEAL1_ID).contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(user))
                 .content(JsonUtil.writeValue(updated)))
-                .andExpect(status().is5xxServerError())
+                .andExpect(status().isUnprocessableEntity())
                 .andDo(print());
 
         MEAL_MATCHER.assertMatch(mealService.get(MEAL1_ID, USER_ID), meal1);
@@ -117,7 +117,7 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(user))
                 .content(JsonUtil.writeValue(newMeal)))
-                .andExpect(status().is5xxServerError())
+                .andExpect(status().isUnprocessableEntity())
                 .andDo(print());
     }
 
