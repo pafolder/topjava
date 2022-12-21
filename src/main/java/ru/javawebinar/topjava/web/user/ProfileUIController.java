@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.support.SessionStatus;
-import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.to.UserTo;
+import ru.javawebinar.topjava.to.validator.UserToConstraint;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
 import javax.validation.Valid;
@@ -24,7 +24,7 @@ public class ProfileUIController extends AbstractUserController {
     }
 
     @PostMapping
-    public String updateProfile(@Valid UserTo userTo, BindingResult result, SessionStatus status) {
+    public String updateProfile(@Validated(UserToConstraint.class) UserTo userTo, BindingResult result, SessionStatus status) {
         if (result.hasErrors()) {
             return "profile";
         } else {
@@ -43,16 +43,12 @@ public class ProfileUIController extends AbstractUserController {
     }
 
     @PostMapping("/register")
-    public String saveRegister(@Validated UserTo userTo, BindingResult result, SessionStatus status, ModelMap model) {
+    public String saveRegister(@Valid UserTo userTo, BindingResult result, SessionStatus status, ModelMap model) {
         if (result.hasErrors()) {
             model.addAttribute("register", true);
             return "profile";
         } else {
-            User user = super.create(userTo);
-            if (user == null) {
-                model.addAttribute("register", true);
-                return "profile";
-            }
+            super.create(userTo);
             status.setComplete();
             return "redirect:/login?message=app.registered&username=" + userTo.getEmail();
         }

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.javawebinar.topjava.AuthorizedUser;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
+import ru.javawebinar.topjava.to.UserTo;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
@@ -12,40 +13,40 @@ import javax.validation.ConstraintValidatorContext;
 import java.util.Objects;
 
 @Component
-public class UserToEmailValidator implements ConstraintValidator<UserToEmailConstraint, String> {
-    UserToEmailConstraint constraintAnnotation;
+public class UserToValidator implements ConstraintValidator<UserToConstraint, UserTo> {
+    UserToConstraint constraintAnnotation;
     UserService userService;
 
-    public UserToEmailValidator(UserService userService) {
+    public UserToValidator(UserService userService) {
         this.userService = userService;
     }
 
     @Override
-    public void initialize(UserToEmailConstraint constraintAnnotation) {
+    public void initialize(UserToConstraint constraintAnnotation) {
         ConstraintValidator.super.initialize(constraintAnnotation);
         this.constraintAnnotation = constraintAnnotation;
     }
 
     @Override
-    public boolean isValid(String email, ConstraintValidatorContext constraintValidatorContext) {
+    public boolean isValid(UserTo userTo, ConstraintValidatorContext constraintValidatorContext) {
         AuthorizedUser authorizedUser = SecurityUtil.safeGet();
-        Integer id = null;
-        if (authorizedUser != null) {
-            id = authorizedUser.getId();
+        if (userTo.getId() == null && authorizedUser != null) {
+            userTo.setId(authorizedUser.getId());
         }
         User user;
         try {
-            user = userService.getByEmail(email);
+            user = userService.getByEmail(userTo.getEmail());
         } catch (NotFoundException e) {
             return true;
         }
-        if (Objects.equals(id, user.getId())) {
+        if (Objects.equals(userTo.getId(), user.getId())) {
             return true;
         }
         constraintValidatorContext.buildConstraintViolationWithTemplate(
-                        "User " + user.getName() + " has this email")
+                        "User " + user.getName() + " already has this email")
                 .addConstraintViolation();
         constraintValidatorContext.disableDefaultConstraintViolation();
         return false;
     }
+
 }
