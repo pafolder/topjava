@@ -1,6 +1,8 @@
 package ru.javawebinar.topjava.to.validator;
 
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 import ru.javawebinar.topjava.AuthorizedUser;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
@@ -8,13 +10,10 @@ import ru.javawebinar.topjava.to.UserTo;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.util.Objects;
 
 @Component
-public class UserToValidator implements ConstraintValidator<UserToConstraint, UserTo> {
-    UserToConstraint constraintAnnotation;
+public class UserToValidator implements Validator {
     UserService userService;
 
     public UserToValidator(UserService userService) {
@@ -22,13 +21,16 @@ public class UserToValidator implements ConstraintValidator<UserToConstraint, Us
     }
 
     @Override
-    public void initialize(UserToConstraint constraintAnnotation) {
-        ConstraintValidator.super.initialize(constraintAnnotation);
-        this.constraintAnnotation = constraintAnnotation;
+    public boolean supports(Class<?> clazz) {
+        if ( clazz == UserTo.class ) {
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public boolean isValid(UserTo userTo, ConstraintValidatorContext constraintValidatorContext) {
+    public void validate(Object object, Errors errors) {
+        UserTo userTo = (UserTo) object;
         AuthorizedUser authorizedUser = SecurityUtil.safeGet();
         if (userTo.getId() == null && authorizedUser != null) {
             userTo.setId(authorizedUser.getId());
@@ -37,16 +39,12 @@ public class UserToValidator implements ConstraintValidator<UserToConstraint, Us
         try {
             user = userService.getByEmail(userTo.getEmail());
         } catch (NotFoundException e) {
-            return true;
+            return;
         }
         if (Objects.equals(userTo.getId(), user.getId())) {
-            return true;
+            return;
         }
-        constraintValidatorContext.buildConstraintViolationWithTemplate(
-                        "User " + user.getName() + " already has this email")
-                .addConstraintViolation();
-        constraintValidatorContext.disableDefaultConstraintViolation();
-        return false;
+        String errorMessage = "User " + user.getName() + " already has " + userTo.getEmail() + " email";
+        errors.rejectValue("email", "Validation error:", errorMessage);
     }
-
 }
